@@ -18,12 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.digitaldungeon.ui.campaign.viewmodel.CampaignDetailViewModel
 import com.example.digitaldungeon.ui.session.components.SessionCard
 
 @Composable
 fun CampaignDetailScreen(
     campaignId: Int,
+    navController: NavController,
     viewModel: CampaignDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.sessionUiState.collectAsState()
@@ -127,6 +129,9 @@ fun CampaignDetailScreen(
                     onDelete = {
                         viewModel
                             .deleteSession(session.id)
+                    },
+                    onClick = {
+                        navController.navigate("session/${session.id}")
                     }
                 )
             }

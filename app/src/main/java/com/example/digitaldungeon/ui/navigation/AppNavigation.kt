@@ -1,11 +1,14 @@
 package com.example.digitaldungeon.ui.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.digitaldungeon.ui.campaign.screen.CampaignDetailScreen
 import com.example.digitaldungeon.ui.campaign.screen.CampaignScreen
+import com.example.digitaldungeon.ui.session.screen.SessionDetailScreen
 
 @Composable
 fun AppNavigation() {
@@ -32,7 +35,19 @@ fun AppNavigation() {
                     ?: 0
 
             CampaignDetailScreen(
-                campaignId = campaignId
+                campaignId = campaignId,
+                navController = navController
+            )
+        }
+
+        composable(
+            route = "session/{sessionId}",
+            arguments = listOf(
+                navArgument("sessionId") { type = NavType.IntType }
+            )
+        ) {
+            SessionDetailScreen(
+                onBack = { navController.popBackStack() }
             )
         }
     }

@@ -8,20 +8,25 @@ import android.content.Context
 import androidx.room.Room
 import com.example.digitaldungeon.data.local.entity.SessionEntity
 import com.example.digitaldungeon.data.local.dao.SessionDao
+import com.example.digitaldungeon.data.local.entity.SessionEventEntity
+import com.example.digitaldungeon.data.local.dao.SessionEventDao
 
 
 @Database(
     entities = [
         CampaignEntity::class,
-        SessionEntity::class
+        SessionEntity::class,
+        SessionEventEntity::class
     ],
-    version = 4
+    version = 5
 )
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun campaignDao(): CampaignDao
 
     abstract fun sessionDao(): SessionDao
+
+    abstract fun sessionEventDao(): SessionEventDao
 
     companion object {
 
@@ -37,7 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "digital_dungeon_db"
                 )
-                    .addMigrations(MIGRATION_3_4)
+                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
                     .build()
 
                 INSTANCE = instance

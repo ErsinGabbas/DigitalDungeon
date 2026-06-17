@@ -1,5 +1,6 @@
 package com.example.digitaldungeon.ui.session.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,11 +17,16 @@ import com.example.digitaldungeon.domain.model.Session
 @Composable
 fun SessionCard(
     session: Session,
-    onDelete: () -> Unit
+    onDelete: () -> Unit,
+    onClick: (() -> Unit)? = null
 ) {
 
     Card(
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .then(
+                if (onClick != null) Modifier.clickable { onClick() } else Modifier
+            )
     ) {
 
         Column(

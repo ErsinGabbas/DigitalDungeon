@@ -4,10 +4,13 @@ import android.content.Context
 import androidx.room.Room
 import com.example.digitaldungeon.data.local.dao.CampaignDao
 import com.example.digitaldungeon.data.local.dao.SessionDao
+import com.example.digitaldungeon.data.local.dao.SessionEventDao
 import com.example.digitaldungeon.data.local.database.AppDatabase
 import com.example.digitaldungeon.data.local.database.MIGRATION_3_4
+import com.example.digitaldungeon.data.local.database.MIGRATION_4_5
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.SessionRepository
+import com.example.digitaldungeon.data.repository.SessionEventRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,7 +30,7 @@ object AppModule {
             AppDatabase::class.java,
             "digital_dungeon_db"
         )
-            .addMigrations(MIGRATION_3_4)
+            .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
             .build()
     }
 
@@ -42,6 +45,11 @@ object AppModule {
     }
 
     @Provides
+    fun provideSessionEventDao(database: AppDatabase): SessionEventDao {
+        return database.sessionEventDao()
+    }
+
+    @Provides
     @Singleton
     fun provideCampaignRepository(campaignDao: CampaignDao): CampaignRepository {
         return CampaignRepository(campaignDao)
@@ -51,5 +59,11 @@ object AppModule {
     @Singleton
     fun provideSessionRepository(sessionDao: SessionDao): SessionRepository {
         return SessionRepository(sessionDao)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSessionEventRepository(sessionEventDao: SessionEventDao): SessionEventRepository {
+        return SessionEventRepository(sessionEventDao)
     }
 }
