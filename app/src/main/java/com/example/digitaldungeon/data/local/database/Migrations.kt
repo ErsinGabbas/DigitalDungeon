@@ -22,8 +22,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 val MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(database: SupportSQLiteDatabase) {
-        // TODO: Implement actual migration logic when schema changes are known
-        // For now, this is a placeholder to prevent crashes
+        // No schema changes
     }
 }
 
