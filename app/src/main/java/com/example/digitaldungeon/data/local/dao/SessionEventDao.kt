@@ -3,8 +3,6 @@ package com.example.digitaldungeon.data.local.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Update
-import androidx.room.Delete
 import com.example.digitaldungeon.data.local.entity.SessionEventEntity
 import kotlinx.coroutines.flow.Flow
 
@@ -28,10 +26,7 @@ interface SessionEventDao {
         event: SessionEventEntity
     ): Long
 
-    @Update
-    suspend fun updateEvent(
-        event: SessionEventEntity
-    )
+
 
     @Query(
         "DELETE FROM session_events WHERE id = :id"
@@ -46,4 +41,7 @@ interface SessionEventDao {
     suspend fun deleteEventsForSession(
         sessionId: Int
     )
+
+    @Query("UPDATE session_events SET content = :content WHERE id = :eventId")
+    suspend fun updateEventContent(eventId: Int, content: String)
 }

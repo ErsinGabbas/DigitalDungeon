@@ -10,5 +10,6 @@ data class SessionDetailUiState(
     val quickNoteText: String = "",
     val selectedEventType: SessionEventType = SessionEventType.NOTE,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val editingEvent: SessionEvent? = null
 )

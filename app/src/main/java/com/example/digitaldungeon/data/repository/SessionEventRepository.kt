@@ -39,9 +39,6 @@ class SessionEventRepository(
         )
     }
 
-    suspend fun updateEvent(event: com.example.digitaldungeon.domain.model.SessionEvent) {
-        dao.updateEvent(event.toEntity())
-    }
 
     suspend fun deleteEvent(id: Int) {
         dao.deleteEvent(id)
@@ -49,5 +46,9 @@ class SessionEventRepository(
 
     suspend fun deleteEventsForSession(sessionId: Int) {
         dao.deleteEventsForSession(sessionId)
+    }
+
+    suspend fun updateEventContent(eventId: Int, content: String) {
+        dao.updateEventContent(eventId, content)
     }
 }
