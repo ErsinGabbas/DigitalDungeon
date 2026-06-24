@@ -119,21 +119,6 @@ class SessionDetailViewModel @Inject constructor(
     // -------------------------
     // EDIT (НОВОЕ)
     // -------------------------
-
-    fun onEditEvent(event: SessionEvent) {
-        _uiState.value = _uiState.value.copy(
-            editingEvent = event,
-            quickNoteText = event.content
-        )
-    }
-
-    fun onEditDialogDismiss() {
-        _uiState.value = _uiState.value.copy(
-            editingEvent = null,
-            quickNoteText = ""
-        )
-    }
-
     fun onUpdateEvent(eventId: Int, newContent: String) {
         viewModelScope.launch {
             try {
@@ -150,6 +135,20 @@ class SessionDetailViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(error = e.message)
             }
         }
+    }
+
+    fun onEditEvent(event: SessionEvent) {
+        _uiState.value = _uiState.value.copy(
+            editingEvent = event,
+            quickNoteText = event.content
+        )
+    }
+
+    fun onEditDialogDismiss() {
+        _uiState.value = _uiState.value.copy(
+            editingEvent = null,
+            quickNoteText = ""
+        )
     }
 
     // -------------------------
