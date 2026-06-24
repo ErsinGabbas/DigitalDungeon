@@ -44,9 +44,6 @@ class SessionEventRepository(
         dao.deleteEvent(id)
     }
 
-    suspend fun deleteEventsForSession(sessionId: Int) {
-        dao.deleteEventsForSession(sessionId)
-    }
 
     suspend fun updateEventContent(eventId: Int, content: String) {
         dao.updateEventContent(eventId, content)
