@@ -7,8 +7,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.digitaldungeon.domain.model.Campaign
@@ -28,25 +31,22 @@ fun CampaignCard(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-
-            horizontalArrangement =
-                Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-
             Column(
-                verticalArrangement =
-                    Arrangement.spacedBy(8.dp)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-
-                Text(campaign.name)
-
-                Text(campaign.description)
-
+                Text(campaign.name, style = MaterialTheme.typography.titleLarge)
+                Text(campaign.description, style = MaterialTheme.typography.bodyMedium)
+                if (campaign.participants.isNotEmpty()) {
+                    ParticipantsCard(participants = campaign.participants)
+                }
             }
-
             Row(
-                horizontalArrangement =
-                    Arrangement.spacedBy(8.dp)
+                modifier = Modifier.padding(start = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
                 Button(
@@ -59,6 +59,44 @@ fun CampaignCard(
                     onClick = onDelete
                 ) {
                     Text("Delete")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ParticipantsCard(participants: List<com.example.digitaldungeon.domain.model.EventParticipant>) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "Participants",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSecondaryContainer
+            )
+            participants.forEach { participant ->
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = participant.name,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                    Text(
+                        text = "Lvl ${participant.level} | HP: ${participant.maxHp}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
                 }
             }
         }

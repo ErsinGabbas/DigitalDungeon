@@ -1,8 +1,11 @@
 package com.example.digitaldungeon.ui.campaign.screen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -30,6 +33,11 @@ fun CampaignDetailScreen(
 ) {
     val state by viewModel.sessionUiState.collectAsState()
     val campaign by viewModel.campaign.collectAsState()
+    val participantName by viewModel.participantName.collectAsState()
+    val participantLevel by viewModel.participantLevel.collectAsState()
+    val participantMaxHp by viewModel.participantMaxHp.collectAsState()
+    val tempParticipants by viewModel.tempParticipants.collectAsState()
+    val editingParticipant by viewModel.editingParticipant.collectAsState()
 
     LaunchedEffect(campaignId) {
 
@@ -70,6 +78,140 @@ fun CampaignDetailScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
+
+        // Show current participants
+        val currentCampaign = campaign
+        if (currentCampaign?.participants?.isNotEmpty() == true) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Campaign Participants:",
+                    style = MaterialTheme.typography.titleSmall
+                )
+                currentCampaign.participants.forEach { participant ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "${participant.name} (Lvl ${participant.level}, HP: ${participant.maxHp})",
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            Button(
+                                onClick = { viewModel.editParticipant(participant) },
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            ) {
+                                Text("Edit")
+                            }
+                            Button(
+                                onClick = { viewModel.removeExistingParticipant(participant) },
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            ) {
+                                Text("Remove")
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Participant management section
+        Text(
+            text = "Manage Participants",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            TextField(
+                value = participantName,
+                onValueChange = viewModel::onParticipantNameChange,
+                label = { Text("Name") },
+                modifier = Modifier.weight(1f),
+                singleLine = true
+            )
+            TextField(
+                value = participantLevel,
+                onValueChange = viewModel::onParticipantLevelChange,
+                label = { Text("Lvl") },
+                modifier = Modifier.width(60.dp),
+                singleLine = true
+            )
+            TextField(
+                value = participantMaxHp,
+                onValueChange = viewModel::onParticipantMaxHpChange,
+                label = { Text("HP") },
+                modifier = Modifier.width(60.dp),
+                singleLine = true
+            )
+        }
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            if (editingParticipant != null) {
+                Button(
+                    onClick = viewModel::updateParticipant,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Update Participant")
+                }
+                Button(
+                    onClick = viewModel::cancelEdit,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Cancel")
+                }
+            } else {
+                Button(
+                    onClick = viewModel::addParticipant,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Add Participant")
+                }
+                Button(
+                    onClick = { viewModel.saveParticipants(campaignId) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text("Save Changes")
+                }
+            }
+        }
+
+        // Show temp participants being added
+        if (tempParticipants.isNotEmpty()) {
+            Column(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
+            ) {
+                Text(
+                    text = "Participants to save:",
+                    style = MaterialTheme.typography.labelSmall
+                )
+                tempParticipants.forEach { participant ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("${participant.name} (Lvl ${participant.level}, HP: ${participant.maxHp})")
+                        Button(
+                            onClick = { viewModel.removeParticipant(participant) },
+                            modifier = Modifier.padding(start = 8.dp)
+                        ) {
+                            Text("Remove")
+                        }
+                    }
+                }
+            }
+        }
 
         Text(
             text = "Campaign ID: $campaignId",

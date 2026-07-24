@@ -28,7 +28,6 @@ fun SessionDetailScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     val editingEvent = uiState.editingEvent
-    val editText = uiState.quickNoteText
 
     Scaffold(
         topBar = {
@@ -124,18 +123,42 @@ fun SessionDetailScreen(
             },
             title = { Text("Edit event") },
             text = {
-                OutlinedTextField(
-                    value = editText,
-                    onValueChange = viewModel::onQuickNoteTextChanged,
-                    label = { Text("Content") }
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    OutlinedTextField(
+                        value = uiState.editTitle,
+                        onValueChange = viewModel::onEditTitleChange,
+                        label = { Text("Title") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Text(
+                        text = "Event Type",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                    EventTypeSelector(
+                        selectedType = uiState.editType,
+                        onTypeSelected = viewModel::onEditTypeChange,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    OutlinedTextField(
+                        value = uiState.editContent,
+                        onValueChange = viewModel::onEditContentChange,
+                        label = { Text("Content") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                        maxLines = 6
+                    )
+                }
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         viewModel.onUpdateEvent(
-                            eventId = editingEvent.id,
-                            newContent = editText
+                            eventId = editingEvent.id
                         )
                     }
                 ) {

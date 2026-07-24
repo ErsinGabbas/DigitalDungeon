@@ -48,4 +48,13 @@ class SessionEventRepository(
     suspend fun updateEventContent(eventId: Int, content: String) {
         dao.updateEventContent(eventId, content)
     }
+
+    suspend fun updateEvent(
+        eventId: Int,
+        title: String,
+        type: com.example.digitaldungeon.domain.model.SessionEventType,
+        content: String
+    ) {
+        dao.updateEvent(eventId, title, type.toEntity(), content)
+    }
 }

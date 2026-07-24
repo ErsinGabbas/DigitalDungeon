@@ -11,5 +11,9 @@ data class SessionDetailUiState(
     val selectedEventType: SessionEventType = SessionEventType.NOTE,
     val isLoading: Boolean = false,
     val error: String? = null,
-    val editingEvent: SessionEvent? = null
+    val editingEvent: SessionEvent? = null,
+    // Edit dialog fields
+    val editTitle: String = "",
+    val editType: SessionEventType = SessionEventType.NOTE,
+    val editContent: String = ""
 )

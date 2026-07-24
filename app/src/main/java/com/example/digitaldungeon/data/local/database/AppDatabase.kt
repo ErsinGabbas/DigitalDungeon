@@ -18,7 +18,7 @@ import com.example.digitaldungeon.data.local.dao.SessionEventDao
         SessionEntity::class,
         SessionEventEntity::class
     ],
-    version = 5
+    version = 7
 )
 abstract class AppDatabase : RoomDatabase() {
 
@@ -42,7 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "digital_dungeon_db"
                 )
-                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
+                    .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                     .build()
 
                 INSTANCE = instance

@@ -35,7 +35,9 @@ data class SessionEventEntity(
 
     val orderIndex: Int,
 
-    val timestamp: Long
+    val timestamp: Long,
+
+    val participants: String? = null
 )
 
 enum class SessionEventType {

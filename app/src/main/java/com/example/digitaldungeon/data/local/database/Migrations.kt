@@ -51,3 +51,29 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         database.execSQL("CREATE INDEX IF NOT EXISTS index_session_events_sessionId_orderIndex ON session_events(sessionId, orderIndex)")
     }
 }
+
+/**
+ * Migration from version 5 to 6
+ * Adds participants column to session_events table for storing character snapshots
+ */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            ALTER TABLE session_events 
+            ADD COLUMN participants TEXT
+        """)
+    }
+}
+
+/**
+ * Migration from version 6 to 7
+ * Adds participants column to campaigns table for storing campaign participants
+ */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("""
+            ALTER TABLE campaigns 
+            ADD COLUMN participants TEXT
+        """)
+    }
+}

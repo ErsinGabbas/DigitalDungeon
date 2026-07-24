@@ -8,6 +8,8 @@ import com.example.digitaldungeon.data.local.dao.SessionEventDao
 import com.example.digitaldungeon.data.local.database.AppDatabase
 import com.example.digitaldungeon.data.local.database.MIGRATION_3_4
 import com.example.digitaldungeon.data.local.database.MIGRATION_4_5
+import com.example.digitaldungeon.data.local.database.MIGRATION_5_6
+import com.example.digitaldungeon.data.local.database.MIGRATION_6_7
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.SessionRepository
 import com.example.digitaldungeon.data.repository.SessionEventRepository
@@ -30,7 +32,7 @@ object AppModule {
             AppDatabase::class.java,
             "digital_dungeon_db"
         )
-            .addMigrations(MIGRATION_3_4, MIGRATION_4_5)
+            .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
             .build()
     }
 

@@ -22,4 +22,7 @@ interface CampaignDao {
     suspend fun getCampaignById(
         id: Int
     ): CampaignEntity
+
+    @Query("UPDATE campaigns SET participants = :participants WHERE id = :campaignId")
+    suspend fun updateCampaignParticipants(campaignId: Int, participants: String?)
 }

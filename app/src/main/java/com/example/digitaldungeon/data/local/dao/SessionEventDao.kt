@@ -44,4 +44,7 @@ interface SessionEventDao {
 
     @Query("UPDATE session_events SET content = :content WHERE id = :eventId")
     suspend fun updateEventContent(eventId: Int, content: String)
+
+    @Query("UPDATE session_events SET title = :title, type = :type, content = :content WHERE id = :eventId")
+    suspend fun updateEvent(eventId: Int, title: String, type: com.example.digitaldungeon.data.local.entity.SessionEventType, content: String)
 }

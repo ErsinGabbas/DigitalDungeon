@@ -61,6 +61,26 @@ fun SessionEventCard(
                 color = MaterialTheme.colorScheme.onPrimaryContainer
             )
 
+            if (event.participants.isNotEmpty()) {
+                Column(
+                    modifier = Modifier.padding(top = 12.dp)
+                ) {
+                    Text(
+                        text = "Participants:",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                    )
+                    event.participants.forEach { participant ->
+                        Text(
+                            text = "${participant.name} (Lvl ${participant.level}, HP: ${participant.maxHp})",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            modifier = Modifier.padding(start = 8.dp, top = 2.dp)
+                        )
+                    }
+                }
+            }
+
             Row(
                 horizontalArrangement = Arrangement.End,
                 modifier = Modifier

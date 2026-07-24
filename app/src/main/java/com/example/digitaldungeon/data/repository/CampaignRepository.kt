@@ -5,6 +5,7 @@ import com.example.digitaldungeon.data.local.entity.CampaignEntity
 import com.example.digitaldungeon.data.mapper.toDomain
 import com.example.digitaldungeon.domain.model.Campaign
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 
 class CampaignRepository(
     private val dao: CampaignDao
@@ -30,14 +31,18 @@ class CampaignRepository(
 
     suspend fun addCampaign(
         name: String,
-        description: String
+        description: String,
+        participants: List<com.example.digitaldungeon.domain.model.EventParticipant> = emptyList()
     ) {
+
+        val participantsJson = if (participants.isEmpty()) null else kotlinx.serialization.json.Json.encodeToString(participants)
 
         dao.insertCampaign(
             CampaignEntity(
                 name = name,
                 description = description,
-                createdAt = System.currentTimeMillis()
+                createdAt = System.currentTimeMillis(),
+                participants = participantsJson
             )
         )
     }
@@ -48,5 +53,13 @@ class CampaignRepository(
 
         dao.deleteCampaign(id)
 
+    }
+
+    suspend fun updateCampaignParticipants(
+        campaignId: Int,
+        participants: List<com.example.digitaldungeon.domain.model.EventParticipant>
+    ) {
+        val participantsJson = if (participants.isEmpty()) null else Json.encodeToString(participants)
+        dao.updateCampaignParticipants(campaignId, participantsJson)
     }
 }

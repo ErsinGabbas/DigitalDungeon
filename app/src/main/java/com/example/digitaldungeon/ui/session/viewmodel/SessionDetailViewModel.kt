@@ -117,19 +117,44 @@ class SessionDetailViewModel @Inject constructor(
     }
 
     // -------------------------
-    // EDIT (НОВОЕ)
+    // EDIT
     // -------------------------
-    fun onUpdateEvent(eventId: Int, newContent: String) {
+    fun onEditEvent(event: SessionEvent) {
+        _uiState.value = _uiState.value.copy(
+            editingEvent = event,
+            editTitle = event.title ?: "",
+            editType = event.type,
+            editContent = event.content
+        )
+    }
+
+    fun onEditTitleChange(title: String) {
+        _uiState.value = _uiState.value.copy(editTitle = title)
+    }
+
+    fun onEditTypeChange(type: SessionEventType) {
+        _uiState.value = _uiState.value.copy(editType = type)
+    }
+
+    fun onEditContentChange(content: String) {
+        _uiState.value = _uiState.value.copy(editContent = content)
+    }
+
+    fun onUpdateEvent(eventId: Int) {
         viewModelScope.launch {
             try {
-                sessionEventRepository.updateEventContent(
+                sessionEventRepository.updateEvent(
                     eventId = eventId,
-                    content = newContent
+                    title = _uiState.value.editTitle,
+                    type = _uiState.value.editType,
+                    content = _uiState.value.editContent
                 )
 
                 _uiState.value = _uiState.value.copy(
                     editingEvent = null,
-                    quickNoteText = ""
+                    editTitle = "",
+                    editType = SessionEventType.NOTE,
+                    editContent = ""
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(error = e.message)
@@ -137,17 +162,12 @@ class SessionDetailViewModel @Inject constructor(
         }
     }
 
-    fun onEditEvent(event: SessionEvent) {
-        _uiState.value = _uiState.value.copy(
-            editingEvent = event,
-            quickNoteText = event.content
-        )
-    }
-
     fun onEditDialogDismiss() {
         _uiState.value = _uiState.value.copy(
             editingEvent = null,
-            quickNoteText = ""
+            editTitle = "",
+            editType = SessionEventType.NOTE,
+            editContent = ""
         )
     }
 

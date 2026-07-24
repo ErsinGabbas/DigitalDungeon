@@ -2,8 +2,10 @@ package com.example.digitaldungeon.data.mapper
 
 import com.example.digitaldungeon.data.local.entity.SessionEventEntity
 import com.example.digitaldungeon.domain.model.SessionEvent
+import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.data.local.entity.SessionEventType as EntityType
 import com.example.digitaldungeon.domain.model.SessionEventType as DomainType
+import kotlinx.serialization.json.Json
 
 fun SessionEventEntity.toDomain(): SessionEvent =
     SessionEvent(
@@ -13,7 +15,10 @@ fun SessionEventEntity.toDomain(): SessionEvent =
         title = title,
         content = content,
         orderIndex = orderIndex,
-        timestamp = timestamp
+        timestamp = timestamp,
+        participants = participants?.let { 
+            Json.decodeFromString<List<EventParticipant>>(it)
+        } ?: emptyList()
     )
 
 fun SessionEvent.toEntity(): SessionEventEntity =
@@ -24,7 +29,8 @@ fun SessionEvent.toEntity(): SessionEventEntity =
         title = title,
         content = content,
         orderIndex = orderIndex,
-        timestamp = timestamp
+        timestamp = timestamp,
+        participants = if (participants.isEmpty()) null else Json.encodeToString(participants)
     )
 
 fun EntityType.toDomain(): DomainType = when (this) {

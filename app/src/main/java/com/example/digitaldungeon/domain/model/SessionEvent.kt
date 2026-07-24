@@ -7,7 +7,8 @@ data class SessionEvent(
     val title: String?,
     val content: String,
     val orderIndex: Int,
-    val timestamp: Long
+    val timestamp: Long,
+    val participants: List<EventParticipant> = emptyList()
 )
 
 enum class SessionEventType {
