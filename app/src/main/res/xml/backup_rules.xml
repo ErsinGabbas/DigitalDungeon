@@ -1,13 +1,27 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample backup rules file; uncomment and customize as necessary.
-   See https://developer.android.com/guide/topics/data/autobackup
-   for details.
-   Note: This file is ignored for devices older than API 31
-   See https://developer.android.com/about/versions/12/backup-restore
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Auto Backup rules used on Android 6.0 (API 23) through Android 11 (API 30).
+    From Android 12 (API 31) on, data_extraction_rules.xml takes over.
+
+    Decision: the app is fully offline and a campaign log is kept for months, so losing it
+    when the user changes device is worse than having it sit in the account's cloud backup.
+    Backup therefore stays enabled (android:allowBackup="true") and the Room database is
+    included on purpose rather than by default.
+
+    Listing any <include> switches Auto Backup from "back up everything" to "back up exactly
+    this", which is the point here: the set below is the complete state the app owns.
 -->
 <full-backup-content>
-    <!--
-   <include domain="sharedpref" path="."/>
-   <exclude domain="sharedpref" path="device.xml"/>
--->
+
+    <!-- The Room database (see di/AppModule.kt): campaigns, sessions, session events. -->
+    <include domain="database" path="digital_dungeon_db" />
+
+    <!-- Room runs in WAL mode, so the newest commits may still live in the -wal file;
+         backing up the main file alone would silently drop the latest sessions. -->
+    <include domain="database" path="digital_dungeon_db-wal" />
+
+    <!-- Shared-memory index of the WAL. SQLite rebuilds it, but restoring it alongside
+         a matching -wal avoids a recovery pass on first open. -->
+    <include domain="database" path="digital_dungeon_db-shm" />
+
 </full-backup-content>

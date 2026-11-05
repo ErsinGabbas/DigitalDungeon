@@ -1,21 +1,59 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
+# R8 keep rules for the release build (isMinifyEnabled = true, isShrinkResources = true).
 #
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Only rules this project actually needs live here. Everything that ships its own
+# consumer rules is deliberately NOT duplicated below — see the notes per library.
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# --- kotlinx.serialization ---------------------------------------------------------
+# EventParticipant is the only @Serializable class in the app; its participants list is
+# persisted as a JSON string in the `participants` TEXT columns. In R8 full mode the
+# generated EventParticipant.$serializer is reachable only through Companion.serializer(),
+# which R8 cannot see, so it gets shrunk away and every decode throws SerializationException.
+# decodeParticipants() swallows that exception and returns an empty list, so the failure
+# shows up as silently empty participant lists in release builds only — keep it explicit.
+# Scoped to domain.model because that is the only package holding serializable models.
+-keep,includedescriptorclasses class com.example.digitaldungeon.domain.model.**$$serializer { *; }
+# Keeps the synthetic Companion field through which serializer() is looked up.
+-keepclassmembers class com.example.digitaldungeon.domain.model.** {
+    *** Companion;
+}
+# Keeps the generated serializer() factory itself on the model/companion classes.
+-keepclasseswithmembers class com.example.digitaldungeon.domain.model.** {
+    kotlinx.serialization.KSerializer serializer(...);
+}
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+
+# --- Enums persisted as TEXT -------------------------------------------------------
+# Room stores SessionEvent.type in a TEXT column using the enum constant names, the Room
+# migrations write those names as SQL literals, and the UI renders type.name directly.
+# Renaming the constants would make already stored rows unreadable, so pin the names.
+# (values()/valueOf() are already kept for every enum by proguard-android-optimize.txt;
+# this rule adds the constant fields, which that default rule does not cover.)
+-keepclassmembers enum com.example.digitaldungeon.domain.model.SessionEventType {
+    <fields>;
+}
+
+
+# --- Room --------------------------------------------------------------------------
+# No rules needed. room-runtime ships a consumer rule that keeps RoomDatabase subclasses
+# (which covers the generated AppDatabase_Impl that Room loads via Class.forName), the DAO
+# implementations are generated at compile time and referenced directly, and the migrations
+# in Migrations.kt are plain objects reached through ALL_MIGRATIONS - nothing reflective.
+# SupportSQLiteOpenHelper is instantiated through FrameworkSQLiteOpenHelperFactory by direct
+# call, not by name, so it needs no keep either.
+# Note: this relies on android.r8.strictFullModeForKeepRules=false (gradle.properties), which
+# keeps the default constructor of classes matched by a -keep rule. Flipping that flag to
+# true means AppDatabase_Impl's no-arg constructor must be kept here explicitly.
+
+
+# --- Hilt / Dagger -------------------------------------------------------------------
+# No rules needed: hilt-android ships its own consumer rules for the reflective
+# EntryPoints casts, and everything else Hilt uses is generated at compile time.
+# Do not copy generic Dagger keep rules in here.
+
+
+# --- Crash reports --------------------------------------------------------------------
+# Keep line numbers so obfuscated release stack traces stay usable, and drop the original
+# file names (they add nothing once the class names are obfuscated).
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

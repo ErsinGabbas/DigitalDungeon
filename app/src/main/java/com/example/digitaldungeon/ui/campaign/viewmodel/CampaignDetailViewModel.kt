@@ -1,16 +1,20 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.digitaldungeon.domain.model.EventParticipant
+import com.example.digitaldungeon.domain.model.Session
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.SessionRepository
 import com.example.digitaldungeon.ui.campaign.state.CampaignDetailUiState
 import com.example.digitaldungeon.ui.campaign.state.CampaignParticipantsUiState
-import com.example.digitaldungeon.ui.session.state.SessionUiState
+import com.example.digitaldungeon.ui.campaign.state.CampaignSessionsUiState
+import com.example.digitaldungeon.ui.campaign.state.PendingSessionDeletion
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -19,35 +23,50 @@ import javax.inject.Inject
 @HiltViewModel
 class CampaignDetailViewModel @Inject constructor(
     private val campaignRepository: CampaignRepository,
-    private val sessionRepository: SessionRepository
+    private val sessionRepository: SessionRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    /**
+     * Comes from the `details/{campaignId}` route, which declares the argument as
+     * [androidx.navigation.NavType.IntType] - a missing or malformed id is a
+     * programming error, not a campaign number 0.
+     */
+    private val campaignId: Int = checkNotNull(savedStateHandle[CAMPAIGN_ID_KEY]) {
+        "CampaignDetailViewModel requires a \"$CAMPAIGN_ID_KEY\" navigation argument"
+    }
 
     // Campaign state - owns only campaign loading errors
     private val _campaignUiState =
-        MutableStateFlow(CampaignDetailUiState())
+        MutableStateFlow(CampaignDetailUiState(campaignId = campaignId))
 
-    val campaignUiState =
+    val campaignUiState: StateFlow<CampaignDetailUiState> =
         _campaignUiState.asStateFlow()
 
     // Session state - owns only session errors (load / add / delete)
     private val _sessionUiState =
-        MutableStateFlow(SessionUiState())
+        MutableStateFlow(CampaignSessionsUiState())
 
-    val sessionUiState =
+    val sessionUiState: StateFlow<CampaignSessionsUiState> =
         _sessionUiState.asStateFlow()
 
-    // Participant management state - owns only participant saving errors
+    // Participant management state - owns only participant form / saving errors
     private val _participantsUiState =
         MutableStateFlow(CampaignParticipantsUiState())
 
-    val participantsUiState =
+    val participantsUiState: StateFlow<CampaignParticipantsUiState> =
         _participantsUiState.asStateFlow()
 
     private var loadSessionsJob: Job? = null
 
     private var loadCampaignJob: Job? = null
 
-    fun loadCampaign(id: Int) {
+    init {
+        loadCampaign()
+        loadSessions()
+    }
+
+    private fun loadCampaign() {
 
         loadCampaignJob?.cancel()
 
@@ -56,7 +75,7 @@ class CampaignDetailViewModel @Inject constructor(
             try {
                 _campaignUiState.update { it.copy(isLoading = true) }
                 campaignRepository
-                    .getCampaignByIdFlow(id)
+                    .getCampaignByIdFlow(campaignId)
                     .collect { campaign ->
 
                         onCampaignParticipantsLoaded(
@@ -103,9 +122,7 @@ class CampaignDetailViewModel @Inject constructor(
         }
     }
 
-    fun loadSessions(
-        campaignId: Int
-    ) {
+    private fun loadSessions() {
 
         loadSessionsJob?.cancel()
 
@@ -158,9 +175,7 @@ class CampaignDetailViewModel @Inject constructor(
         }
     }
 
-    fun addSession(
-        campaignId: Int
-    ) {
+    fun addSession() {
 
         val title =
             _sessionUiState.value.sessionTitle
@@ -168,7 +183,12 @@ class CampaignDetailViewModel @Inject constructor(
         val notes =
             _sessionUiState.value.sessionNotes
 
-        if (title.isBlank()) return
+        if (title.isBlank()) {
+            _sessionUiState.update {
+                it.copy(error = "Session title cannot be empty")
+            }
+            return
+        }
 
         viewModelScope.launch {
 
@@ -199,15 +219,44 @@ class CampaignDetailViewModel @Inject constructor(
         }
     }
 
-    fun deleteSession(
-        id: Int
-    ) {
+    /**
+     * Asks for confirmation instead of deleting straight away: a session takes all
+     * of its events down with it.
+     */
+    fun requestDeleteSession(session: Session) {
+
+        _sessionUiState.update {
+            it.copy(
+                pendingDeletion = PendingSessionDeletion(
+                    sessionId = session.id,
+                    sessionTitle = session.title
+                )
+            )
+        }
+    }
+
+    fun cancelDeleteSession() {
+
+        _sessionUiState.update {
+            it.copy(pendingDeletion = null)
+        }
+    }
+
+    fun confirmDeleteSession() {
+
+        val pending =
+            _sessionUiState.value.pendingDeletion ?: return
 
         viewModelScope.launch {
 
             try {
-                _sessionUiState.update { it.copy(isLoading = true) }
-                sessionRepository.deleteSession(id)
+                _sessionUiState.update {
+                    it.copy(
+                        pendingDeletion = null,
+                        isLoading = true
+                    )
+                }
+                sessionRepository.deleteSession(pending.sessionId)
                 _sessionUiState.update {
                     it.copy(
                         isLoading = false,
@@ -229,19 +278,20 @@ class CampaignDetailViewModel @Inject constructor(
     // Participant management methods
     fun onParticipantNameChange(value: String) {
         _participantsUiState.update {
-            it.copy(participantName = value)
+            // Editing the form clears the rejection it caused.
+            it.copy(participantName = value, error = null)
         }
     }
 
     fun onParticipantLevelChange(value: String) {
         _participantsUiState.update {
-            it.copy(participantLevel = value)
+            it.copy(participantLevel = value, error = null)
         }
     }
 
     fun onParticipantMaxHpChange(value: String) {
         _participantsUiState.update {
-            it.copy(participantMaxHp = value)
+            it.copy(participantMaxHp = value, error = null)
         }
     }
 
@@ -249,12 +299,17 @@ class CampaignDetailViewModel @Inject constructor(
 
         _participantsUiState.update { state ->
 
-            val participant =
-                state.toParticipantOrNull() ?: return@update state
+            when (val result = state.validateParticipantForm()) {
 
-            state.copy(
-                participants = state.participants + participant
-            ).clearForm()
+                is ParticipantFormResult.Invalid ->
+                    state.copy(error = result.message)
+
+                is ParticipantFormResult.Valid ->
+                    state.copy(
+                        participants = state.participants + result.participant,
+                        error = null
+                    ).clearForm()
+            }
         }
     }
 
@@ -269,7 +324,8 @@ class CampaignDetailViewModel @Inject constructor(
                 editingIndex = index,
                 participantName = participant.name,
                 participantLevel = participant.level.toString(),
-                participantMaxHp = participant.maxHp.toString()
+                participantMaxHp = participant.maxHp.toString(),
+                error = null
             )
         }
     }
@@ -283,14 +339,19 @@ class CampaignDetailViewModel @Inject constructor(
 
             if (index !in state.participants.indices) return@update state
 
-            val participant =
-                state.toParticipantOrNull() ?: return@update state
+            when (val result = state.validateParticipantForm()) {
 
-            state.copy(
-                participants = state.participants.mapIndexed { i, existing ->
-                    if (i == index) participant else existing
-                }
-            ).clearForm()
+                is ParticipantFormResult.Invalid ->
+                    state.copy(error = result.message)
+
+                is ParticipantFormResult.Valid ->
+                    state.copy(
+                        participants = state.participants.mapIndexed { i, existing ->
+                            if (i == index) result.participant else existing
+                        },
+                        error = null
+                    ).clearForm()
+            }
         }
     }
 
@@ -321,10 +382,10 @@ class CampaignDetailViewModel @Inject constructor(
     }
 
     fun cancelEdit() {
-        _participantsUiState.update { it.clearForm() }
+        _participantsUiState.update { it.clearForm().copy(error = null) }
     }
 
-    fun saveParticipants(campaignId: Int) {
+    fun saveParticipants() {
 
         viewModelScope.launch {
 
@@ -361,18 +422,43 @@ class CampaignDetailViewModel @Inject constructor(
         }
     }
 
-    private fun CampaignParticipantsUiState.toParticipantOrNull(): EventParticipant? {
+    /**
+     * Rejects what the database would otherwise happily store: blank names and
+     * non-positive or absurd levels and hit points. The reason is handed back so
+     * the screen can show it instead of a button that silently does nothing.
+     */
+    private fun CampaignParticipantsUiState.validateParticipantForm(): ParticipantFormResult {
 
         val name = participantName.trim()
-        val level = participantLevel.toIntOrNull()
-        val maxHp = participantMaxHp.toIntOrNull()
 
-        if (name.isBlank() || level == null || maxHp == null) return null
+        if (name.isBlank()) {
+            return ParticipantFormResult.Invalid("Participant name cannot be empty")
+        }
 
-        return EventParticipant(
-            name = name,
-            level = level,
-            maxHp = maxHp
+        val level = participantLevel.trim().toIntOrNull()
+            ?: return ParticipantFormResult.Invalid("Level must be a whole number")
+
+        if (level !in MIN_LEVEL..MAX_LEVEL) {
+            return ParticipantFormResult.Invalid(
+                "Level must be between $MIN_LEVEL and $MAX_LEVEL"
+            )
+        }
+
+        val maxHp = participantMaxHp.trim().toIntOrNull()
+            ?: return ParticipantFormResult.Invalid("Max HP must be a whole number")
+
+        if (maxHp !in MIN_MAX_HP..MAX_MAX_HP) {
+            return ParticipantFormResult.Invalid(
+                "Max HP must be between $MIN_MAX_HP and $MAX_MAX_HP"
+            )
+        }
+
+        return ParticipantFormResult.Valid(
+            EventParticipant(
+                name = name,
+                level = level,
+                maxHp = maxHp
+            )
         )
     }
 
@@ -383,4 +469,26 @@ class CampaignDetailViewModel @Inject constructor(
             participantMaxHp = "",
             editingIndex = null
         )
+
+    companion object {
+
+        const val CAMPAIGN_ID_KEY = "campaignId"
+
+        const val MIN_LEVEL = 1
+        const val MAX_LEVEL = 100
+
+        const val MIN_MAX_HP = 1
+        const val MAX_MAX_HP = 9999
+    }
+}
+
+/**
+ * Outcome of validating the participant form: either a participant to store or
+ * the reason the input was refused.
+ */
+private sealed interface ParticipantFormResult {
+
+    data class Valid(val participant: EventParticipant) : ParticipantFormResult
+
+    data class Invalid(val message: String) : ParticipantFormResult
 }

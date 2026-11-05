@@ -9,13 +9,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
+import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 @Composable
 fun SessionEventCard(
@@ -122,3 +125,41 @@ private fun SessionEventType.contentColor(): Color =
         SessionEventType.DISCOVERY -> MaterialTheme.colorScheme.onTertiaryContainer
         SessionEventType.NOTE -> MaterialTheme.colorScheme.onSurfaceVariant
     }
+
+/**
+ * Every event type at once — the five container roles are where text contrast
+ * breaks first, so they are reviewed side by side in both themes.
+ */
+@Composable
+private fun SessionEventCardGallery() {
+    Surface(color = MaterialTheme.colorScheme.background) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            previewAllEvents.forEach { event ->
+                SessionEventCard(
+                    event = event,
+                    onEdit = {},
+                    onDelete = {}
+                )
+            }
+        }
+    }
+}
+
+@Preview(name = "SessionEventCard - light", showBackground = true, heightDp = 1200)
+@Composable
+private fun SessionEventCardLightPreview() {
+    DigitalDungeonTheme(darkTheme = false) {
+        SessionEventCardGallery()
+    }
+}
+
+@Preview(name = "SessionEventCard - dark", showBackground = true, heightDp = 1200)
+@Composable
+private fun SessionEventCardDarkPreview() {
+    DigitalDungeonTheme(darkTheme = true) {
+        SessionEventCardGallery()
+    }
+}

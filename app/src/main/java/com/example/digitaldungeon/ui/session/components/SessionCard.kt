@@ -11,8 +11,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.digitaldungeon.domain.model.Session
+import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 @Composable
 fun SessionCard(
@@ -58,6 +60,27 @@ fun SessionCard(
 
                 }
             }
+        }
+    }
+}
+
+@Preview(name = "SessionCard", showBackground = true)
+@Composable
+private fun SessionCardPreview() {
+    DigitalDungeonTheme {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            SessionCard(
+                session = previewSession,
+                onDelete = {},
+                onClick = {}
+            )
+            SessionCard(
+                session = previewSession.copy(notes = ""),
+                onDelete = {}
+            )
         }
     }
 }

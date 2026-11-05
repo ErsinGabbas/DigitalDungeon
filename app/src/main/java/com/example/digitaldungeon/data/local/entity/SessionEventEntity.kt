@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.example.digitaldungeon.domain.model.SessionEventType
 
 @Entity(
     tableName = "session_events",
@@ -39,11 +40,3 @@ data class SessionEventEntity(
 
     val participants: String? = null
 )
-
-enum class SessionEventType {
-    SCENE,
-    COMBAT,
-    DIALOGUE,
-    DISCOVERY,
-    NOTE
-}

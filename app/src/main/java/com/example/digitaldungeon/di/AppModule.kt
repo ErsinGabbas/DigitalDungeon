@@ -8,9 +8,6 @@ import com.example.digitaldungeon.data.local.dao.SessionEventDao
 import com.example.digitaldungeon.data.local.database.AppDatabase
 import com.example.digitaldungeon.data.local.database.ALL_MIGRATIONS
 import com.example.digitaldungeon.data.local.database.DESTRUCTIVELY_MIGRATED_VERSIONS
-import com.example.digitaldungeon.data.repository.CampaignRepository
-import com.example.digitaldungeon.data.repository.SessionRepository
-import com.example.digitaldungeon.data.repository.SessionEventRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -50,23 +47,5 @@ object AppModule {
     @Provides
     fun provideSessionEventDao(database: AppDatabase): SessionEventDao {
         return database.sessionEventDao()
-    }
-
-    @Provides
-    @Singleton
-    fun provideCampaignRepository(campaignDao: CampaignDao): CampaignRepository {
-        return CampaignRepository(campaignDao)
-    }
-
-    @Provides
-    @Singleton
-    fun provideSessionRepository(sessionDao: SessionDao): SessionRepository {
-        return SessionRepository(sessionDao)
-    }
-
-    @Provides
-    @Singleton
-    fun provideSessionEventRepository(sessionEventDao: SessionEventDao): SessionEventRepository {
-        return SessionEventRepository(sessionEventDao)
     }
 }

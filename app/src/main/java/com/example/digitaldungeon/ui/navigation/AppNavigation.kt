@@ -22,21 +22,24 @@ fun AppNavigation() {
 
         composable("campaigns") {
             CampaignScreen(
-                navController = navController
+                onOpenCampaign = { campaignId ->
+                    navController.navigate("details/$campaignId")
+                }
             )
         }
 
-        composable("details/{campaignId}") {
-
-            val campaignId =
-                it.arguments
-                    ?.getString("campaignId")
-                    ?.toIntOrNull()
-                    ?: 0
-
+        composable(
+            route = "details/{campaignId}",
+            arguments = listOf(
+                navArgument("campaignId") { type = NavType.IntType }
+            )
+        ) {
+            // campaignId reaches the ViewModel through SavedStateHandle
             CampaignDetailScreen(
-                campaignId = campaignId,
-                navController = navController
+                onBack = { navController.popBackStack() },
+                onOpenSession = { sessionId ->
+                    navController.navigate("session/$sessionId")
+                }
             )
         }
 

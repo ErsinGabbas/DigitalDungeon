@@ -15,5 +15,16 @@ data class SessionDetailUiState(
     // Edit dialog fields
     val editTitle: String = "",
     val editType: SessionEventType = SessionEventType.NOTE,
-    val editContent: String = ""
-)
+    val editContent: String = "",
+    // Delete confirmation dialog: the event the user is about to delete
+    val eventPendingDeletion: SessionEvent? = null
+) {
+    /**
+     * Single source of truth for "is the quick note worth adding".
+     * The screen uses it to enable the Add button and the ViewModel uses it to
+     * guard [com.example.digitaldungeon.ui.session.viewmodel.SessionDetailViewModel.onAddQuickNote],
+     * so the rule lives in exactly one place.
+     */
+    val canAddQuickNote: Boolean
+        get() = quickNoteText.isNotBlank()
+}

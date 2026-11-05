@@ -16,22 +16,54 @@ import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.compose.material3.TextField
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.navigation.NavController
+import com.example.digitaldungeon.domain.model.Campaign
+import com.example.digitaldungeon.domain.model.EventParticipant
+import com.example.digitaldungeon.ui.campaign.state.CampaignUiState
 import com.example.digitaldungeon.ui.campaign.viewmodel.CampaignViewModel
 import com.example.digitaldungeon.ui.campaign.components.CampaignCard
 import androidx.compose.foundation.lazy.items
+import com.example.digitaldungeon.ui.components.ConfirmDeleteDialog
+import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CampaignScreen(
-    navController: NavController,
+    onOpenCampaign: (Int) -> Unit,
     viewModel: CampaignViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+
+    CampaignScreenContent(
+        state = state,
+        onCampaignNameChange = viewModel::onCampaignNameChange,
+        onCampaignDescriptionChange = viewModel::onCampaignDescriptionChange,
+        onAddCampaign = viewModel::addCampaign,
+        onOpenCampaign = onOpenCampaign,
+        onDeleteCampaignRequest = viewModel::requestDeleteCampaign,
+        onConfirmDeleteCampaign = viewModel::confirmDeleteCampaign,
+        onCancelDeleteCampaign = viewModel::cancelDeleteCampaign
+    )
+}
+
+/**
+ * The screen without its ViewModel, so it can be previewed and tested.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CampaignScreenContent(
+    state: CampaignUiState,
+    onCampaignNameChange: (String) -> Unit,
+    onCampaignDescriptionChange: (String) -> Unit,
+    onAddCampaign: () -> Unit,
+    onOpenCampaign: (Int) -> Unit,
+    onDeleteCampaignRequest: (Campaign) -> Unit,
+    onConfirmDeleteCampaign: () -> Unit,
+    onCancelDeleteCampaign: () -> Unit
+) {
 
     Scaffold(
         topBar = {
@@ -42,6 +74,17 @@ fun CampaignScreen(
             )
         }
     ) { paddingValues ->
+
+        state.pendingDeletion?.let { pending ->
+            ConfirmDeleteDialog(
+                title = "Delete campaign?",
+                text = "\"${pending.campaignName}\" will be deleted together with " +
+                    "all of its sessions and every event recorded in them. " +
+                    "This cannot be undone.",
+                onConfirm = onConfirmDeleteCampaign,
+                onDismiss = onCancelDeleteCampaign
+            )
+        }
 
         Column(
             modifier = Modifier
@@ -63,9 +106,7 @@ fun CampaignScreen(
 
             TextField(
                 value = state.campaignName,
-                onValueChange = {
-                    viewModel.onCampaignNameChange(it)
-                },
+                onValueChange = onCampaignNameChange,
                 label = {
                     Text("Campaign Name")
                 },
@@ -74,11 +115,7 @@ fun CampaignScreen(
 
             TextField(
                 value = state.campaignDescription,
-
-                onValueChange = {
-                    viewModel.onCampaignDescriptionChange(it)
-                },
-
+                onValueChange = onCampaignDescriptionChange,
                 label = {
                     Text("Campaign Description")
                 },
@@ -86,9 +123,7 @@ fun CampaignScreen(
             )
 
             Button(
-                onClick = {
-                    viewModel.addCampaign()
-                },
+                onClick = onAddCampaign,
                 enabled = !state.isLoading
             ) {
                 if (state.isLoading) {
@@ -116,17 +151,51 @@ fun CampaignScreen(
                         campaign = campaign,
 
                         onDelete = {
-                            viewModel.deleteCampaign(campaign.id)
+                            onDeleteCampaignRequest(campaign)
                         },
 
                         onOpen = {
-                            navController.navigate(
-                                "details/${campaign.id}"
-                            )
+                            onOpenCampaign(campaign.id)
                         }
                     )
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun CampaignScreenContentPreview() {
+    DigitalDungeonTheme {
+        CampaignScreenContent(
+            state = CampaignUiState(
+                campaigns = listOf(
+                    Campaign(
+                        id = 1,
+                        name = "Curse of Strahd",
+                        description = "Gothic horror in Barovia",
+                        createdAt = 0L,
+                        participants = listOf(
+                            EventParticipant(name = "Ireena", level = 4, maxHp = 28)
+                        )
+                    ),
+                    Campaign(
+                        id = 2,
+                        name = "Tomb of Annihilation",
+                        description = "Jungle death march",
+                        createdAt = 0L
+                    )
+                ),
+                campaignName = "Lost Mine of Phandelver"
+            ),
+            onCampaignNameChange = {},
+            onCampaignDescriptionChange = {},
+            onAddCampaign = {},
+            onOpenCampaign = {},
+            onDeleteCampaignRequest = {},
+            onConfirmDeleteCampaign = {},
+            onCancelDeleteCampaign = {}
+        )
     }
 }

@@ -93,14 +93,15 @@ class SessionDetailViewModel @Inject constructor(
     fun onAddQuickNote() {
         viewModelScope.launch {
             try {
-                val text = _uiState.value.quickNoteText
-                if (text.isBlank()) return@launch
+                val state = _uiState.value
+                // Same rule the Add button is enabled by, so the two can never disagree
+                if (!state.canAddQuickNote) return@launch
 
                 sessionEventRepository.addEvent(
                     sessionId = sessionId,
-                    type = _uiState.value.selectedEventType,
+                    type = state.selectedEventType,
                     title = null,
-                    content = text
+                    content = state.quickNoteText
                 )
 
                 _uiState.update { it.copy(quickNoteText = "") }
@@ -113,14 +114,33 @@ class SessionDetailViewModel @Inject constructor(
     // -------------------------
     // DELETE
     // -------------------------
-    fun onDeleteEvent(eventId: Int) {
+    /**
+     * Arms the delete confirmation dialog. Nothing is removed until
+     * [onConfirmDeleteEvent] is called.
+     */
+    fun onDeleteEventClick(event: SessionEvent) {
+        // Only one dialog at a time: asking to delete closes the edit dialog
+        _uiState.update {
+            it.clearEditDialog().copy(eventPendingDeletion = event)
+        }
+    }
+
+    fun onConfirmDeleteEvent() {
+        val event = _uiState.value.eventPendingDeletion ?: return
+
+        _uiState.update { it.copy(eventPendingDeletion = null) }
+
         viewModelScope.launch {
             try {
-                sessionEventRepository.deleteEvent(eventId)
+                sessionEventRepository.deleteEvent(event.id)
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
         }
+    }
+
+    fun onDeleteDialogDismiss() {
+        _uiState.update { it.copy(eventPendingDeletion = null) }
     }
 
     // -------------------------
@@ -129,6 +149,8 @@ class SessionDetailViewModel @Inject constructor(
     fun onEditEvent(event: SessionEvent) {
         _uiState.update {
             it.copy(
+                // Only one dialog at a time: editing closes a pending delete
+                eventPendingDeletion = null,
                 editingEvent = event,
                 editTitle = event.title ?: "",
                 editType = event.type,
@@ -159,14 +181,7 @@ class SessionDetailViewModel @Inject constructor(
                     content = _uiState.value.editContent
                 )
 
-                _uiState.update {
-                    it.copy(
-                        editingEvent = null,
-                        editTitle = "",
-                        editType = SessionEventType.NOTE,
-                        editContent = ""
-                    )
-                }
+                _uiState.update { it.clearEditDialog() }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message) }
             }
@@ -174,14 +189,7 @@ class SessionDetailViewModel @Inject constructor(
     }
 
     fun onEditDialogDismiss() {
-        _uiState.update {
-            it.copy(
-                editingEvent = null,
-                editTitle = "",
-                editType = SessionEventType.NOTE,
-                editContent = ""
-            )
-        }
+        _uiState.update { it.clearEditDialog() }
     }
 
     // -------------------------
@@ -190,4 +198,12 @@ class SessionDetailViewModel @Inject constructor(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+
+    private fun SessionDetailUiState.clearEditDialog(): SessionDetailUiState =
+        copy(
+            editingEvent = null,
+            editTitle = "",
+            editType = SessionEventType.NOTE,
+            editContent = ""
+        )
 }

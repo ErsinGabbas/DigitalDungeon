@@ -9,6 +9,8 @@ import com.example.digitaldungeon.domain.model.Campaign
  * failure cannot be overwritten by - or overwrite - their errors.
  */
 data class CampaignDetailUiState(
+    /** Id the screen was opened with, available before the campaign has loaded. */
+    val campaignId: Int = 0,
     val campaign: Campaign? = null,
     val isLoading: Boolean = false,
     val error: String? = null

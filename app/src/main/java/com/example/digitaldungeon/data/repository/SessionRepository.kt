@@ -1,57 +1,25 @@
 package com.example.digitaldungeon.data.repository
 
-import com.example.digitaldungeon.data.local.dao.SessionDao
-import com.example.digitaldungeon.data.local.entity.SessionEntity
-import com.example.digitaldungeon.data.mapper.toDomain
-import kotlinx.coroutines.flow.map
+import com.example.digitaldungeon.domain.model.Session
+import kotlinx.coroutines.flow.Flow
 
-class SessionRepository(
-    private val dao: SessionDao
-) {
+interface SessionRepository {
 
     fun getSessionsForCampaign(
         campaignId: Int
-    ) =
-        dao.getSessionsForCampaign(campaignId)
-            .map { entities ->
-
-                entities.map {
-                    it.toDomain()
-                }
-
-            }
+    ): Flow<List<Session>>
 
     fun getSessionById(
         id: Int
-    ) =
-        dao.getSessionById(id)
-            .map { entity ->
-
-                entity?.toDomain()
-
-            }
+    ): Flow<Session?>
 
     suspend fun addSession(
         campaignId: Int,
         title: String,
         notes: String
-    ) {
-
-        dao.insertSession(
-            SessionEntity(
-                campaignId = campaignId,
-                title = title,
-                notes = notes,
-                createdAt = System.currentTimeMillis()
-            )
-        )
-    }
+    )
 
     suspend fun deleteSession(
         id: Int
-    ) {
-
-        dao.deleteSession(id)
-
-    }
+    )
 }

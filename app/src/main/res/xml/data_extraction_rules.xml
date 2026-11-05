@@ -1,19 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-   Sample data extraction rules file; uncomment and customize as necessary.
-   See https://developer.android.com/about/versions/12/backup-restore#xml-changes
-   for details.
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Backup and transfer rules used from Android 12 (API 31) on. Older releases read
+    backup_rules.xml instead; both files describe the same decision.
+
+    Decision: the app is fully offline and a campaign log is kept for months, so losing it
+    when the user changes device is worse than having it sit in the account's cloud backup.
+    Backup therefore stays enabled (android:allowBackup="true") and the Room database is
+    included on purpose in both flows rather than by default.
+
+    Both sections are spelled out even though the defaults would cover everything, so that
+    adding a file the app must NOT back up is a visible change here instead of a silent one.
 -->
 <data-extraction-rules>
+
+    <!-- Google cloud backup: survives losing or wiping the device. -->
     <cloud-backup>
-        <!-- TODO: Use <include> and <exclude> to control what is backed up.
-        <include .../>
-        <exclude .../>
-        -->
+        <!-- The Room database (see di/AppModule.kt): campaigns, sessions, session events. -->
+        <include domain="database" path="digital_dungeon_db" />
+        <!-- Room runs in WAL mode; the newest commits may still live in the -wal file. -->
+        <include domain="database" path="digital_dungeon_db-wal" />
+        <include domain="database" path="digital_dungeon_db-shm" />
     </cloud-backup>
-    <!--
+
+    <!-- Device-to-device transfer during setup of a new phone. Same data set. -->
     <device-transfer>
-        <include .../>
-        <exclude .../>
+        <include domain="database" path="digital_dungeon_db" />
+        <include domain="database" path="digital_dungeon_db-wal" />
+        <include domain="database" path="digital_dungeon_db-shm" />
     </device-transfer>
-    -->
+
 </data-extraction-rules>

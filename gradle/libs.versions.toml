@@ -13,11 +13,17 @@ activityCompose = "1.9.3"
 # project used to hardcode, so artifacts below must not carry their own version.
 composeBom = "2024.11.00"
 lifecycle = "2.8.7"
-navigationCompose = "2.7.7"
+# 2.8.9 is the last stable 2.8.x: built for Compose 1.7.x (the BOM above pins 1.7.5)
+# and still published against compileSdk 35 — 2.9.x already requires compileSdk 36.
+navigationCompose = "2.8.9"
 room = "2.6.1"
 hilt = "2.52"
 hiltNavigationCompose = "1.2.0"
 kotlinxSerializationJson = "1.8.0"
+# Matches the coroutines version already on the runtime classpath (room-ktx 2.6.1 asks for
+# 1.7.1, lifecycle 2.8.7 for 1.7.3, so Gradle resolves 1.7.3). Keep these in sync: a newer
+# coroutines-test would drag coroutines-core up for the whole project.
+kotlinxCoroutinesTest = "1.7.3"
 ksp = "2.0.21-1.0.28"
 
 [libraries]
@@ -35,6 +41,10 @@ androidx-activity-compose = { group = "androidx.activity", name = "activity-comp
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+# @Preview annotation — needed whenever the composables are compiled, release included
+androidx-compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+# The preview renderer itself — debug only, it must not ship in the release APK
+androidx-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 androidx-lifecycle-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 # Already on the classpath transitively; declared explicitly so collectAsStateWithLifecycle
 # does not depend on another library happening to pull it in.
@@ -53,6 +63,9 @@ hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", v
 androidx-hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+
+# Unit tests only: runTest, TestDispatcher, advanceUntilIdle
+kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

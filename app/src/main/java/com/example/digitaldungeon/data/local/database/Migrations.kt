@@ -9,7 +9,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * Kept so that the 3 -> 7 migration path stays connected.
  */
 val MIGRATION_3_4 = object : Migration(3, 4) {
-    override fun migrate(database: SupportSQLiteDatabase) {
+    override fun migrate(db: SupportSQLiteDatabase) {
         // No schema changes
     }
 }
@@ -19,9 +19,9 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
  * Adds session_events table for timeline-based session events
  */
 val MIGRATION_4_5 = object : Migration(4, 5) {
-    override fun migrate(database: SupportSQLiteDatabase) {
+    override fun migrate(db: SupportSQLiteDatabase) {
         // Create session_events table
-        database.execSQL("""
+        db.execSQL("""
             CREATE TABLE IF NOT EXISTS session_events (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 sessionId INTEGER NOT NULL,
@@ -35,8 +35,8 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
         """)
         
         // Create indices
-        database.execSQL("CREATE INDEX IF NOT EXISTS index_session_events_sessionId ON session_events(sessionId)")
-        database.execSQL("CREATE INDEX IF NOT EXISTS index_session_events_sessionId_orderIndex ON session_events(sessionId, orderIndex)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_session_events_sessionId ON session_events(sessionId)")
+        db.execSQL("CREATE INDEX IF NOT EXISTS index_session_events_sessionId_orderIndex ON session_events(sessionId, orderIndex)")
     }
 }
 

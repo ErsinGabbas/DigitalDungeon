@@ -7,13 +7,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.digitaldungeon.domain.model.SessionEventType
+import com.example.digitaldungeon.ui.session.components.DeleteEventConfirmDialog
 import com.example.digitaldungeon.ui.session.components.EventTypeSelector
 import com.example.digitaldungeon.ui.session.components.QuickNoteInput
 import com.example.digitaldungeon.ui.session.components.SessionEventCard
@@ -28,6 +32,23 @@ fun SessionDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     val editingEvent = uiState.editingEvent
+    val eventPendingDeletion = uiState.eventPendingDeletion
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    // A line of red text at the bottom of the column is easy to miss while the
+    // timeline is scrolled, so errors are surfaced as a snackbar instead
+    val error = uiState.error
+    LaunchedEffect(error) {
+        if (error != null) {
+            snackbarHostState.showSnackbar(
+                message = error,
+                withDismissAction = true,
+                duration = SnackbarDuration.Long
+            )
+            viewModel.clearError()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -42,7 +63,8 @@ fun SessionDetailScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
 
         if (uiState.isLoading) {
@@ -67,6 +89,7 @@ fun SessionDetailScreen(
             QuickNoteSection(
                 selectedType = uiState.selectedEventType,
                 noteText = uiState.quickNoteText,
+                canAdd = uiState.canAddQuickNote,
                 onTypeSelected = viewModel::onEventTypeSelected,
                 onTextChanged = viewModel::onQuickNoteTextChanged,
                 onAdd = viewModel::onAddQuickNote
@@ -82,7 +105,7 @@ fun SessionDetailScreen(
                 EmptyTimelineState(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 24.dp)
+                        .weight(1f)
                 )
             } else {
                 LazyColumn(
@@ -96,90 +119,105 @@ fun SessionDetailScreen(
                                 viewModel.onEditEvent(event)
                             },
                             onDelete = {
-                                viewModel.onDeleteEvent(event.id)
+                                viewModel.onDeleteEventClick(event)
                             }
                         )
                     }
                 }
             }
-
-            uiState.error?.let { error ->
-                Text(
-                    text = error,
-                    color = MaterialTheme.colorScheme.error,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
-            }
         }
     }
 
     // -------------------------
-    // EDIT DIALOG (VM DRIVEN)
+    // DIALOGS (VM DRIVEN)
+    //
+    // One branch, so edit and delete confirmation can never be shown at once —
+    // the ViewModel also clears the other whenever one is opened.
     // -------------------------
-    if (editingEvent != null) {
-        AlertDialog(
-            onDismissRequest = {
-                viewModel.onEditDialogDismiss()
-            },
-            title = { Text("Edit event") },
-            text = {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = uiState.editTitle,
-                        onValueChange = viewModel::onEditTitleChange,
-                        label = { Text("Title") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
+    when {
+        editingEvent != null -> EditEventDialog(
+            title = uiState.editTitle,
+            type = uiState.editType,
+            content = uiState.editContent,
+            onTitleChange = viewModel::onEditTitleChange,
+            onTypeChange = viewModel::onEditTypeChange,
+            onContentChange = viewModel::onEditContentChange,
+            onSave = { viewModel.onUpdateEvent(eventId = editingEvent.id) },
+            onDismiss = viewModel::onEditDialogDismiss
+        )
 
-                    Text(
-                        text = "Event Type",
-                        style = MaterialTheme.typography.labelSmall
-                    )
-                    EventTypeSelector(
-                        selectedType = uiState.editType,
-                        onTypeSelected = viewModel::onEditTypeChange,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    OutlinedTextField(
-                        value = uiState.editContent,
-                        onValueChange = viewModel::onEditContentChange,
-                        label = { Text("Content") },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 3,
-                        maxLines = 6
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.onUpdateEvent(
-                            eventId = editingEvent.id
-                        )
-                    }
-                ) {
-                    Text("Save")
-                }
-            },
-            dismissButton = {
-                TextButton(
-                    onClick = viewModel::onEditDialogDismiss
-                ) {
-                    Text("Cancel")
-                }
-            }
+        eventPendingDeletion != null -> DeleteEventConfirmDialog(
+            event = eventPendingDeletion,
+            onConfirm = viewModel::onConfirmDeleteEvent,
+            onDismiss = viewModel::onDeleteDialogDismiss
         )
     }
+}
+
+@Composable
+private fun EditEventDialog(
+    title: String,
+    type: SessionEventType,
+    content: String,
+    onTitleChange: (String) -> Unit,
+    onTypeChange: (SessionEventType) -> Unit,
+    onContentChange: (String) -> Unit,
+    onSave: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit event") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = onTitleChange,
+                    label = { Text("Title") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Text(
+                    text = "Event Type",
+                    style = MaterialTheme.typography.labelSmall
+                )
+                EventTypeSelector(
+                    selectedType = type,
+                    onTypeSelected = onTypeChange,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = onContentChange,
+                    label = { Text("Content") },
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = 3,
+                    maxLines = 6
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onSave) {
+                Text("Save")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Composable
 private fun QuickNoteSection(
     selectedType: SessionEventType,
     noteText: String,
+    canAdd: Boolean,
     onTypeSelected: (SessionEventType) -> Unit,
     onTextChanged: (String) -> Unit,
     onAdd: () -> Unit
@@ -199,7 +237,8 @@ private fun QuickNoteSection(
         QuickNoteInput(
             text = noteText,
             onTextChange = onTextChanged,
-            onAdd = onAdd
+            onAdd = onAdd,
+            canAdd = canAdd
         )
     }
 }
@@ -212,9 +251,21 @@ private fun EmptyTimelineState(
         modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "No events yet",
-            style = MaterialTheme.typography.bodyLarge
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "No events yet",
+                style = MaterialTheme.typography.bodyLarge,
+                textAlign = TextAlign.Center
+            )
+            Text(
+                text = "Pick a type above and add your first note.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
+            )
+        }
     }
 }

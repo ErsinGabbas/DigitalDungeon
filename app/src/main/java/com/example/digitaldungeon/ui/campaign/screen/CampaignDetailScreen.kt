@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -22,22 +21,23 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
+import com.example.digitaldungeon.ui.campaign.components.ParticipantForm
+import com.example.digitaldungeon.ui.campaign.components.ParticipantRow
 import com.example.digitaldungeon.ui.campaign.viewmodel.CampaignDetailViewModel
+import com.example.digitaldungeon.ui.components.ConfirmDeleteDialog
 import com.example.digitaldungeon.ui.session.components.SessionCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CampaignDetailScreen(
-    campaignId: Int,
-    navController: NavController,
+    onBack: () -> Unit,
+    onOpenSession: (Int) -> Unit,
     viewModel: CampaignDetailViewModel = hiltViewModel()
 ) {
     val state by viewModel.sessionUiState.collectAsStateWithLifecycle()
@@ -45,17 +45,6 @@ fun CampaignDetailScreen(
     val participantsState by viewModel.participantsUiState.collectAsStateWithLifecycle()
 
     val campaign = campaignState.campaign
-
-    LaunchedEffect(campaignId) {
-
-        viewModel.loadCampaign(
-            campaignId
-        )
-
-        viewModel.loadSessions(
-            campaignId
-        )
-    }
 
     Scaffold(
         topBar = {
@@ -65,9 +54,7 @@ fun CampaignDetailScreen(
                 },
                 navigationIcon = {
                     IconButton(
-                        onClick = {
-                            navController.popBackStack()
-                        }
+                        onClick = onBack
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -79,6 +66,16 @@ fun CampaignDetailScreen(
         }
     ) { paddingValues ->
 
+        state.pendingDeletion?.let { pending ->
+            ConfirmDeleteDialog(
+                title = "Delete session?",
+                text = "\"${pending.sessionTitle}\" will be deleted together with " +
+                    "every event recorded in it. This cannot be undone.",
+                onConfirm = viewModel::confirmDeleteSession,
+                onDismiss = viewModel::cancelDeleteSession
+            )
+        }
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -87,9 +84,10 @@ fun CampaignDetailScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            // Session error display
-            item {
-                state.error?.let { error ->
+            // Session error display. The null check stays outside item {}: an item that
+            // renders nothing is still an item, and the list's spacing leaves a blank gap.
+            state.error?.let { error ->
+                item {
                     Text(
                         text = error,
                         color = MaterialTheme.colorScheme.error,
@@ -99,16 +97,11 @@ fun CampaignDetailScreen(
                 }
             }
 
-            item {
-                Text(
-                    text = campaign?.name ?: "Campaign",
-                    style = MaterialTheme.typography.headlineMedium
-                )
-            }
+            // The campaign name is already the TopAppBar title - no second heading here.
 
             // Campaign error display
-            item {
-                campaignState.error?.let { error ->
+            campaignState.error?.let { error ->
+                item {
                     Text(
                         text = error,
                         color = MaterialTheme.colorScheme.error,
@@ -154,8 +147,8 @@ fun CampaignDetailScreen(
             }
 
             // Participant error display
-            item {
-                participantsState.error?.let { error ->
+            participantsState.error?.let { error ->
+                item {
                     Text(
                         text = error,
                         color = MaterialTheme.colorScheme.error,
@@ -179,32 +172,11 @@ fun CampaignDetailScreen(
                 }
             } else {
                 itemsIndexed(participantsState.participants) { index, participant ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "${participant.name} (Lvl ${participant.level}, HP: ${participant.maxHp})",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Button(
-                                onClick = { viewModel.editParticipant(index) },
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            ) {
-                                Text("Edit")
-                            }
-                            Button(
-                                onClick = { viewModel.removeParticipant(index) },
-                                modifier = Modifier.padding(horizontal = 4.dp)
-                            ) {
-                                Text("Remove")
-                            }
-                        }
-                    }
+                    ParticipantRow(
+                        participant = participant,
+                        onEdit = { viewModel.editParticipant(index) },
+                        onRemove = { viewModel.removeParticipant(index) }
+                    )
                 }
             }
 
@@ -218,67 +190,24 @@ fun CampaignDetailScreen(
             }
 
             item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    TextField(
-                        value = participantsState.participantName,
-                        onValueChange = viewModel::onParticipantNameChange,
-                        label = { Text("Name") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    TextField(
-                        value = participantsState.participantLevel,
-                        onValueChange = viewModel::onParticipantLevelChange,
-                        label = { Text("Lvl") },
-                        modifier = Modifier.width(60.dp),
-                        singleLine = true
-                    )
-                    TextField(
-                        value = participantsState.participantMaxHp,
-                        onValueChange = viewModel::onParticipantMaxHpChange,
-                        label = { Text("HP") },
-                        modifier = Modifier.width(60.dp),
-                        singleLine = true
-                    )
-                }
-            }
-
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (participantsState.isEditing) {
-                        Button(
-                            onClick = viewModel::updateParticipant,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Update Participant")
-                        }
-                        Button(
-                            onClick = viewModel::cancelEdit,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Cancel")
-                        }
-                    } else {
-                        Button(
-                            onClick = viewModel::addParticipant,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text("Add Participant")
-                        }
-                    }
-                }
+                ParticipantForm(
+                    name = participantsState.participantName,
+                    level = participantsState.participantLevel,
+                    maxHp = participantsState.participantMaxHp,
+                    isEditing = participantsState.isEditing,
+                    onNameChange = viewModel::onParticipantNameChange,
+                    onLevelChange = viewModel::onParticipantLevelChange,
+                    onMaxHpChange = viewModel::onParticipantMaxHpChange,
+                    onAdd = viewModel::addParticipant,
+                    onUpdate = viewModel::updateParticipant,
+                    onCancelEdit = viewModel::cancelEdit
+                )
             }
 
             // Always available - editing a participant must never hide it
             item {
                 Button(
-                    onClick = { viewModel.saveParticipants(campaignId) },
+                    onClick = viewModel::saveParticipants,
                     enabled = !participantsState.isSaving,
                     modifier = Modifier
                         .fillMaxWidth()
@@ -296,19 +225,9 @@ fun CampaignDetailScreen(
             }
 
             item {
-                Text(
-                    text = "Campaign ID: $campaignId",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-
-            item {
                 TextField(
                     value = state.sessionTitle,
-                    onValueChange = {
-                        viewModel
-                            .onSessionTitleChange(it)
-                    },
+                    onValueChange = viewModel::onSessionTitleChange,
                     label = {
                         Text("Session Title")
                     },
@@ -319,10 +238,7 @@ fun CampaignDetailScreen(
             item {
                 TextField(
                     value = state.sessionNotes,
-                    onValueChange = {
-                        viewModel
-                            .onSessionNotesChange(it)
-                    },
+                    onValueChange = viewModel::onSessionNotesChange,
                     label = {
                         Text("Session Notes")
                     },
@@ -332,11 +248,7 @@ fun CampaignDetailScreen(
 
             item {
                 Button(
-                    onClick = {
-                        viewModel.addSession(
-                            campaignId
-                        )
-                    },
+                    onClick = viewModel::addSession,
                     enabled = !state.isLoading
                 ) {
                     if (state.isLoading) {
@@ -360,11 +272,10 @@ fun CampaignDetailScreen(
                 SessionCard(
                     session = session,
                     onDelete = {
-                        viewModel
-                            .deleteSession(session.id)
+                        viewModel.requestDeleteSession(session)
                     },
                     onClick = {
-                        navController.navigate("session/${session.id}")
+                        onOpenSession(session.id)
                     }
                 )
             }

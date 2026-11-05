@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.digitaldungeon.data.local.entity.SessionEventEntity
-import com.example.digitaldungeon.data.local.entity.SessionEventType
+import com.example.digitaldungeon.domain.model.SessionEventType
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -34,13 +34,6 @@ interface SessionEventDao {
     )
     suspend fun deleteEvent(
         id: Int
-    )
-
-    @Query(
-        "DELETE FROM session_events WHERE sessionId = :sessionId"
-    )
-    suspend fun deleteEventsForSession(
-        sessionId: Int
     )
 
     @Query("UPDATE session_events SET title = :title, type = :type, content = :content WHERE id = :eventId")
