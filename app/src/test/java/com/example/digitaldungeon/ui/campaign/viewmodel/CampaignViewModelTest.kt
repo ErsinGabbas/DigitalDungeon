@@ -91,6 +91,40 @@ class CampaignViewModelTest {
             assertTrue(repository.addCampaignCalls.isEmpty())
         }
 
+    /**
+     * The add form used to do nothing at all on a blank name, which read as a dead
+     * button; it now says why, the same way `addSession` does.
+     */
+    @Test
+    fun addCampaign_withBlankName_putsTheReasonIntoError() =
+        runTest(mainDispatcherRule.testDispatcher) {
+
+            val viewModel = createViewModel()
+            viewModel.onCampaignNameChange("   ")
+
+            viewModel.addCampaign()
+            advanceUntilIdle()
+
+            assertEquals(
+                CampaignViewModel.CAMPAIGN_NAME_REQUIRED,
+                viewModel.uiState.value.error
+            )
+        }
+
+    @Test
+    fun addCampaign_withBlankName_doesNotSetEditError() =
+        runTest(mainDispatcherRule.testDispatcher) {
+
+            val viewModel = createViewModel()
+            viewModel.onCampaignNameChange("")
+
+            viewModel.addCampaign()
+            advanceUntilIdle()
+
+            // The add form is not a dialog: its message belongs on the screen.
+            assertNull(viewModel.uiState.value.editError)
+        }
+
     @Test
     fun addCampaign_withBlankName_keepsTypedDescription() =
         runTest(mainDispatcherRule.testDispatcher) {

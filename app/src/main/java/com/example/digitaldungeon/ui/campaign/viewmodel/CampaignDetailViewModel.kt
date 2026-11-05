@@ -185,7 +185,7 @@ class CampaignDetailViewModel @Inject constructor(
 
         if (title.isBlank()) {
             _sessionUiState.update {
-                it.copy(error = "Session title cannot be empty")
+                it.copy(error = SESSION_TITLE_REQUIRED)
             }
             return
         }
@@ -226,7 +226,8 @@ class CampaignDetailViewModel @Inject constructor(
     fun requestDeleteSession(session: Session) {
 
         _sessionUiState.update {
-            it.copy(
+            // Only one dialog at a time: asking to delete closes the edit dialog.
+            it.clearEditDialog().copy(
                 pendingDeletion = PendingSessionDeletion(
                     sessionId = session.id,
                     sessionTitle = session.title
@@ -274,6 +275,110 @@ class CampaignDetailViewModel @Inject constructor(
 
         }
     }
+
+    /**
+     * Opens the edit dialog on a copy of the stored title and notes, so the session
+     * in the list is only touched once the user saves.
+     */
+    fun requestEditSession(session: Session) {
+
+        _sessionUiState.update {
+            it.copy(
+                // Only one dialog at a time: editing closes a pending delete.
+                pendingDeletion = null,
+                editingSession = session,
+                editSessionTitle = session.title,
+                editSessionNotes = session.notes,
+                editError = null
+            )
+        }
+    }
+
+    fun onEditSessionTitleChange(
+        value: String
+    ) {
+
+        _sessionUiState.update {
+            // Typing clears the rejection it caused.
+            it.copy(
+                editSessionTitle = value,
+                editError = null
+            )
+        }
+    }
+
+    fun onEditSessionNotesChange(
+        value: String
+    ) {
+
+        _sessionUiState.update {
+            it.copy(
+                editSessionNotes = value,
+                editError = null
+            )
+        }
+    }
+
+    fun cancelEditSession() {
+
+        _sessionUiState.update { it.clearEditDialog() }
+    }
+
+    fun confirmEditSession() {
+
+        val editing =
+            _sessionUiState.value.editingSession ?: return
+
+        val title =
+            _sessionUiState.value.editSessionTitle.trim()
+
+        // Keeps the dialog open with the reason instead of closing it on a title
+        // the session list could never show.
+        if (title.isBlank()) {
+            _sessionUiState.update {
+                it.copy(editError = SESSION_TITLE_REQUIRED)
+            }
+            return
+        }
+
+        val notes =
+            _sessionUiState.value.editSessionNotes.trim()
+
+        viewModelScope.launch {
+
+            try {
+                _sessionUiState.update {
+                    it.clearEditDialog().copy(isLoading = true)
+                }
+                sessionRepository.updateSession(
+                    id = editing.id,
+                    title = title,
+                    notes = notes
+                )
+                _sessionUiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
+            } catch (e: Exception) {
+                _sessionUiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to update session"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun CampaignSessionsUiState.clearEditDialog() =
+        copy(
+            editingSession = null,
+            editSessionTitle = "",
+            editSessionNotes = "",
+            editError = null
+        )
 
     // Participant management methods
     fun onParticipantNameChange(value: String) {
@@ -473,6 +578,8 @@ class CampaignDetailViewModel @Inject constructor(
     companion object {
 
         const val CAMPAIGN_ID_KEY = "campaignId"
+
+        const val SESSION_TITLE_REQUIRED = "Session title cannot be empty"
 
         const val MIN_LEVEL = 1
         const val MAX_LEVEL = 100

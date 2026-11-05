@@ -1,6 +1,7 @@
 package com.example.digitaldungeon.testing
 
 import com.example.digitaldungeon.data.repository.SessionEventRepository
+import com.example.digitaldungeon.data.repository.SessionEventRepository.MoveDirection
 import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
 import kotlinx.coroutines.flow.Flow
@@ -19,6 +20,7 @@ class FakeSessionEventRepository : SessionEventRepository {
     var addEventError: Exception? = null
     var deleteEventError: Exception? = null
     var updateEventError: Exception? = null
+    var moveEventError: Exception? = null
 
     data class AddEventCall(
         val sessionId: Int,
@@ -34,8 +36,14 @@ class FakeSessionEventRepository : SessionEventRepository {
         val content: String
     )
 
+    data class MoveEventCall(
+        val eventId: Int,
+        val direction: MoveDirection
+    )
+
     val addEventCalls = mutableListOf<AddEventCall>()
     val updateEventCalls = mutableListOf<UpdateEventCall>()
+    val moveEventCalls = mutableListOf<MoveEventCall>()
     val deleteEventCalls = mutableListOf<Int>()
     val getEventsForSessionCalls = mutableListOf<Int>()
 
@@ -68,5 +76,13 @@ class FakeSessionEventRepository : SessionEventRepository {
     ) {
         updateEventCalls += UpdateEventCall(eventId, title, type, content)
         updateEventError?.let { throw it }
+    }
+
+    override suspend fun moveEvent(
+        eventId: Int,
+        direction: MoveDirection
+    ) {
+        moveEventCalls += MoveEventCall(eventId, direction)
+        moveEventError?.let { throw it }
     }
 }

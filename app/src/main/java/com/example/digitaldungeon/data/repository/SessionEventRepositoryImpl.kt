@@ -55,4 +55,15 @@ class SessionEventRepositoryImpl @Inject constructor(
     ) {
         dao.updateEvent(eventId, title, type, content)
     }
+
+
+    override suspend fun moveEvent(
+        eventId: Int,
+        direction: SessionEventRepository.MoveDirection
+    ) {
+        dao.moveEvent(
+            eventId = eventId,
+            moveUp = direction == SessionEventRepository.MoveDirection.UP
+        )
+    }
 }

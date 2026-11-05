@@ -19,6 +19,7 @@ class FakeSessionRepository : SessionRepository {
     var getSessionsForCampaignError: Exception? = null
     var getSessionByIdError: Exception? = null
     var addSessionError: Exception? = null
+    var updateSessionError: Exception? = null
     var deleteSessionError: Exception? = null
 
     data class AddSessionCall(
@@ -27,7 +28,14 @@ class FakeSessionRepository : SessionRepository {
         val notes: String
     )
 
+    data class UpdateSessionCall(
+        val id: Int,
+        val title: String,
+        val notes: String
+    )
+
     val addSessionCalls = mutableListOf<AddSessionCall>()
+    val updateSessionCalls = mutableListOf<UpdateSessionCall>()
     val deleteSessionCalls = mutableListOf<Int>()
     val getSessionsForCampaignCalls = mutableListOf<Int>()
     val getSessionByIdCalls = mutableListOf<Int>()
@@ -46,6 +54,11 @@ class FakeSessionRepository : SessionRepository {
     override suspend fun addSession(campaignId: Int, title: String, notes: String) {
         addSessionCalls += AddSessionCall(campaignId, title, notes)
         addSessionError?.let { throw it }
+    }
+
+    override suspend fun updateSession(id: Int, title: String, notes: String) {
+        updateSessionCalls += UpdateSessionCall(id, title, notes)
+        updateSessionError?.let { throw it }
     }
 
     override suspend fun deleteSession(id: Int) {

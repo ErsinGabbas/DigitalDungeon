@@ -29,12 +29,19 @@ class FakeCampaignRepository : CampaignRepository {
     var getCampaignByIdFlowError: Exception? = null
     var addCampaignError: Exception? = null
     var deleteCampaignError: Exception? = null
+    var updateCampaignError: Exception? = null
     var updateCampaignParticipantsError: Exception? = null
 
     data class AddCampaignCall(
         val name: String,
         val description: String,
         val participants: List<EventParticipant>
+    )
+
+    data class UpdateCampaignCall(
+        val id: Int,
+        val name: String,
+        val description: String
     )
 
     data class UpdateParticipantsCall(
@@ -44,6 +51,7 @@ class FakeCampaignRepository : CampaignRepository {
 
     val addCampaignCalls = mutableListOf<AddCampaignCall>()
     val deleteCampaignCalls = mutableListOf<Int>()
+    val updateCampaignCalls = mutableListOf<UpdateCampaignCall>()
     val updateCampaignParticipantsCalls = mutableListOf<UpdateParticipantsCall>()
     val getCampaignByIdFlowCalls = mutableListOf<Int>()
     val getCampaignByIdCalls = mutableListOf<Int>()
@@ -74,6 +82,15 @@ class FakeCampaignRepository : CampaignRepository {
     override suspend fun deleteCampaign(id: Int) {
         deleteCampaignCalls += id
         deleteCampaignError?.let { throw it }
+    }
+
+    override suspend fun updateCampaign(
+        id: Int,
+        name: String,
+        description: String
+    ) {
+        updateCampaignCalls += UpdateCampaignCall(id, name, description)
+        updateCampaignError?.let { throw it }
     }
 
     override suspend fun updateCampaignParticipants(

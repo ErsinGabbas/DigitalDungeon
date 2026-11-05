@@ -29,9 +29,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.digitaldungeon.ui.campaign.components.ParticipantForm
 import com.example.digitaldungeon.ui.campaign.components.ParticipantRow
+import com.example.digitaldungeon.ui.campaign.components.SessionListItem
 import com.example.digitaldungeon.ui.campaign.viewmodel.CampaignDetailViewModel
 import com.example.digitaldungeon.ui.components.ConfirmDeleteDialog
-import com.example.digitaldungeon.ui.session.components.SessionCard
+import com.example.digitaldungeon.ui.components.EditDetailsDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,11 +67,29 @@ fun CampaignDetailScreen(
         }
     ) { paddingValues ->
 
-        state.pendingDeletion?.let { pending ->
-            ConfirmDeleteDialog(
+        val editingSession = state.editingSession
+        val pendingDeletion = state.pendingDeletion
+
+        // One branch, so editing and delete confirmation can never be shown at
+        // once - the ViewModel also clears the other whenever one is opened.
+        when {
+            editingSession != null -> EditDetailsDialog(
+                title = "Edit session",
+                nameValue = state.editSessionTitle,
+                nameLabel = "Session Title",
+                detailsValue = state.editSessionNotes,
+                detailsLabel = "Session Notes",
+                onNameChange = viewModel::onEditSessionTitleChange,
+                onDetailsChange = viewModel::onEditSessionNotesChange,
+                onConfirm = viewModel::confirmEditSession,
+                onDismiss = viewModel::cancelEditSession,
+                error = state.editError
+            )
+
+            pendingDeletion != null -> ConfirmDeleteDialog(
                 title = "Delete session?",
-                text = "\"${pending.sessionTitle}\" will be deleted together with " +
-                    "every event recorded in it. This cannot be undone.",
+                text = "\"${pendingDeletion.sessionTitle}\" will be deleted together " +
+                    "with every event recorded in it. This cannot be undone.",
                 onConfirm = viewModel::confirmDeleteSession,
                 onDismiss = viewModel::cancelDeleteSession
             )
@@ -269,13 +288,16 @@ fun CampaignDetailScreen(
             }
 
             items(state.sessions) { session ->
-                SessionCard(
+                SessionListItem(
                     session = session,
+                    onOpen = {
+                        onOpenSession(session.id)
+                    },
+                    onEdit = {
+                        viewModel.requestEditSession(session)
+                    },
                     onDelete = {
                         viewModel.requestDeleteSession(session)
-                    },
-                    onClick = {
-                        onOpenSession(session.id)
                     }
                 )
             }

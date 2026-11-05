@@ -4,7 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.digitaldungeon.data.repository.SessionEventRepository
+import com.example.digitaldungeon.data.repository.SessionEventRepository.MoveDirection
 import com.example.digitaldungeon.data.repository.SessionRepository
+import com.example.digitaldungeon.domain.export.formatSessionAsMarkdown
 import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
 import com.example.digitaldungeon.ui.session.state.SessionDetailUiState
@@ -77,6 +79,91 @@ class SessionDetailViewModel @Inject constructor(
                 _uiState.update { it.copy(error = e.message) }
             }
         }
+    }
+
+    // -------------------------
+    // FILTERING
+    //
+    // Purely in memory: the filtered timeline is derived from the already
+    // loaded events in SessionDetailUiState, so no extra query (and no schema
+    // change) is involved and the full list is never lost.
+    // -------------------------
+    fun onSearchQueryChange(query: String) {
+        _uiState.update { it.copy(searchQuery = query) }
+    }
+
+    fun onClearSearchQuery() {
+        _uiState.update { it.copy(searchQuery = "") }
+    }
+
+    /** Passing `null` shows every type again. */
+    fun onTypeFilterSelected(type: SessionEventType?) {
+        _uiState.update { it.copy(typeFilter = type) }
+    }
+
+    fun onClearFilters() {
+        _uiState.update { it.copy(searchQuery = "", typeFilter = null) }
+    }
+
+    // -------------------------
+    // REORDERING
+    // -------------------------
+    fun onMoveEventUp(event: SessionEvent) {
+        moveEvent(event, MoveDirection.UP)
+    }
+
+    fun onMoveEventDown(event: SessionEvent) {
+        moveEvent(event, MoveDirection.DOWN)
+    }
+
+    /**
+     * Shifts [event] one position on the full timeline.
+     *
+     * Refuses to act while a filter is active: neighbours in the filtered list
+     * are not neighbours in the stored order, so a move would quietly swap a
+     * pair the user never saw. The screen disables the buttons for the same
+     * reason — this guard only makes the rule impossible to bypass.
+     */
+    private fun moveEvent(event: SessionEvent, direction: MoveDirection) {
+        val state = _uiState.value
+        if (!state.canReorder) return
+
+        val index = state.events.indexOfFirst { it.id == event.id }
+        if (index == -1) return
+
+        val targetIndex = if (direction == MoveDirection.UP) index - 1 else index + 1
+        // The edges are already disabled in the UI; keep the ViewModel honest
+        // in case the state changed between composition and the click
+        if (targetIndex !in state.events.indices) return
+
+        viewModelScope.launch {
+            try {
+                sessionEventRepository.moveEvent(
+                    eventId = event.id,
+                    direction = direction
+                )
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+            }
+        }
+    }
+
+    // -------------------------
+    // EXPORT
+    // -------------------------
+    /**
+     * The session log as Markdown, or `null` while no session is loaded.
+     *
+     * Always built from the **full** event list, never from the filtered one:
+     * exporting the current selection would hand the user a silently truncated
+     * log. Returning a plain string keeps every Android concern (the share
+     * intent) on the screen side.
+     */
+    fun buildSessionMarkdown(): String? {
+        val state = _uiState.value
+        val session = state.session ?: return null
+
+        return formatSessionAsMarkdown(session = session, events = state.events)
     }
 
     // -------------------------

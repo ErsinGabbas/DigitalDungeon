@@ -1,24 +1,33 @@
 package com.example.digitaldungeon.ui.session.screen
 
+import android.app.Activity
+import android.content.Context
+import android.content.ContextWrapper
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.Alignment
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.digitaldungeon.domain.model.SessionEventType
 import com.example.digitaldungeon.ui.session.components.DeleteEventConfirmDialog
+import com.example.digitaldungeon.ui.session.components.EmptyTimelineState
+import com.example.digitaldungeon.ui.session.components.EventSearchBar
+import com.example.digitaldungeon.ui.session.components.EventTypeFilterRow
 import com.example.digitaldungeon.ui.session.components.EventTypeSelector
+import com.example.digitaldungeon.ui.session.components.NoMatchingEventsState
 import com.example.digitaldungeon.ui.session.components.QuickNoteInput
 import com.example.digitaldungeon.ui.session.components.SessionEventCard
 import com.example.digitaldungeon.ui.session.viewmodel.SessionDetailViewModel
@@ -35,6 +44,9 @@ fun SessionDetailScreen(
     val eventPendingDeletion = uiState.eventPendingDeletion
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Only the screen talks to Android: the ViewModel hands over a plain string
+    val context = LocalContext.current
 
     // A line of red text at the bottom of the column is easy to miss while the
     // timeline is scrolled, so errors are surfaced as a snackbar instead
@@ -59,6 +71,28 @@ fun SessionDetailScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            val markdown = viewModel.buildSessionMarkdown()
+                            if (markdown != null) {
+                                context.shareAsPlainText(
+                                    subject = uiState.session?.title.orEmpty(),
+                                    body = markdown
+                                )
+                            }
+                        },
+                        // Nothing to export before the session is loaded
+                        enabled = uiState.session != null
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Share,
+                            // Says "full" on purpose: the export ignores the
+                            // filter and always covers the whole log
+                            contentDescription = "Share full session log"
                         )
                     }
                 }
@@ -101,18 +135,49 @@ fun SessionDetailScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            if (uiState.events.isEmpty()) {
-                EmptyTimelineState(
+            EventSearchBar(
+                query = uiState.searchQuery,
+                onQueryChange = viewModel::onSearchQueryChange,
+                onClearQuery = viewModel::onClearSearchQuery
+            )
+
+            EventTypeFilterRow(
+                selectedType = uiState.typeFilter,
+                onTypeSelected = viewModel::onTypeFilterSelected,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            )
+
+            if (uiState.isFilterActive) {
+                FilterStatusLine(
+                    visibleCount = uiState.visibleEvents.size,
+                    totalCount = uiState.events.size
+                )
+            }
+
+            when {
+                uiState.isTimelineEmpty -> EmptyTimelineState(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
                 )
-            } else {
-                LazyColumn(
+
+                uiState.hasNoMatchingEvents -> NoMatchingEventsState(
+                    onClearFilters = viewModel::onClearFilters,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                )
+
+                else -> LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(uiState.events, key = { it.id }) { event ->
+                    itemsIndexed(
+                        items = uiState.visibleEvents,
+                        key = { _, event -> event.id }
+                    ) { index, event ->
                         SessionEventCard(
                             event = event,
                             onEdit = {
@@ -120,6 +185,20 @@ fun SessionDetailScreen(
                             },
                             onDelete = {
                                 viewModel.onDeleteEventClick(event)
+                            },
+                            // The screen owns the position; the card only gets
+                            // the verdict. Edges are disabled so the arrows
+                            // never look broken, and the whole pair is off
+                            // while filtering, where "the event above" on
+                            // screen is not the event above in storage.
+                            canMoveUp = uiState.canReorder && index > 0,
+                            canMoveDown = uiState.canReorder &&
+                                index < uiState.visibleEvents.lastIndex,
+                            onMoveUp = {
+                                viewModel.onMoveEventUp(event)
+                            },
+                            onMoveDown = {
+                                viewModel.onMoveEventDown(event)
                             }
                         )
                     }
@@ -153,6 +232,57 @@ fun SessionDetailScreen(
         )
     }
 }
+
+/**
+ * Explains, in one line, both surprises of a filtered timeline: the arrows are
+ * greyed out, and the share action still exports everything.
+ */
+@Composable
+private fun FilterStatusLine(
+    visibleCount: Int,
+    totalCount: Int
+) {
+    Text(
+        text = "Showing $visibleCount of $totalCount events. " +
+            "Reordering is off while filtering; sharing still exports the full log.",
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(bottom = 8.dp)
+    )
+}
+
+/**
+ * Hands the already formatted log to whatever app the user picks. No file and
+ * no FileProvider: plain text goes through the share sheet as an extra.
+ */
+private fun Context.shareAsPlainText(subject: String, body: String) {
+    val sendIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_SUBJECT, subject)
+        putExtra(Intent.EXTRA_TEXT, body)
+    }
+
+    val chooser = Intent.createChooser(sendIntent, "Share session log")
+
+    val activity = findActivity()
+    if (activity != null) {
+        activity.startActivity(chooser)
+    } else {
+        // Starting an activity from a non-activity context requires its own task
+        startActivity(chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+    }
+}
+
+/**
+ * `LocalContext.current` is normally the hosting activity, but it can be a
+ * wrapper around it (previews, embedded contexts), so unwrap before launching.
+ */
+private tailrec fun Context.findActivity(): Activity? =
+    when (this) {
+        is Activity -> this
+        is ContextWrapper -> baseContext.findActivity()
+        else -> null
+    }
 
 @Composable
 private fun EditEventDialog(
@@ -240,32 +370,5 @@ private fun QuickNoteSection(
             onAdd = onAdd,
             canAdd = canAdd
         )
-    }
-}
-
-@Composable
-private fun EmptyTimelineState(
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier,
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = "No events yet",
-                style = MaterialTheme.typography.bodyLarge,
-                textAlign = TextAlign.Center
-            )
-            Text(
-                text = "Pick a type above and add your first note.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center
-            )
-        }
     }
 }

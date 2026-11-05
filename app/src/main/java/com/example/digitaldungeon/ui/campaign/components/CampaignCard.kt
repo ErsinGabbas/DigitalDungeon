@@ -20,12 +20,15 @@ import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 /**
+ * @param onEdit asks for the campaign's name and description to be edited - the
+ * caller is expected to open the edit dialog.
  * @param onDelete asks for the campaign to be deleted - the caller is expected to
  * confirm first, deleting a campaign cascades to its sessions and their events.
  */
 @Composable
 fun CampaignCard(
     campaign: Campaign,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     onOpen: () -> Unit
 ) {
@@ -51,15 +54,23 @@ fun CampaignCard(
                     ParticipantsCard(participants = campaign.participants)
                 }
             }
-            Row(
+            // Stacked rather than side by side: three labelled buttons in a row
+            // crowd the name out on a narrow screen.
+            Column(
                 modifier = Modifier.padding(start = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
 
                 Button(
                     onClick = onOpen
                 ) {
                     Text("Open")
+                }
+
+                Button(
+                    onClick = onEdit
+                ) {
+                    Text("Edit")
                 }
 
                 Button(
@@ -125,6 +136,7 @@ private fun CampaignCardPreview() {
                     EventParticipant(name = "Ismark the Lesser", level = 3, maxHp = 24)
                 )
             ),
+            onEdit = {},
             onDelete = {},
             onOpen = {}
         )
@@ -142,6 +154,7 @@ private fun CampaignCardWithoutParticipantsPreview() {
                 description = "A jungle death march",
                 createdAt = 0L
             ),
+            onEdit = {},
             onDelete = {},
             onOpen = {}
         )

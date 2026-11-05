@@ -3,6 +3,7 @@ package com.example.digitaldungeon.di
 import android.content.Context
 import androidx.room.Room
 import com.example.digitaldungeon.data.local.dao.CampaignDao
+import com.example.digitaldungeon.data.local.dao.CampaignParticipantDao
 import com.example.digitaldungeon.data.local.dao.SessionDao
 import com.example.digitaldungeon.data.local.dao.SessionEventDao
 import com.example.digitaldungeon.data.local.database.AppDatabase
@@ -29,7 +30,7 @@ object AppModule {
         )
             .addMigrations(*ALL_MIGRATIONS)
             // Schemas for versions 1-2 were never exported, so no migration path exists.
-            // Such installations are recreated from scratch; the 3 -> 7 path stays migrational.
+            // Such installations are recreated from scratch; the 3 -> 8 path stays migrational.
             .fallbackToDestructiveMigrationFrom(*DESTRUCTIVELY_MIGRATED_VERSIONS)
             .build()
     }
@@ -37,6 +38,11 @@ object AppModule {
     @Provides
     fun provideCampaignDao(database: AppDatabase): CampaignDao {
         return database.campaignDao()
+    }
+
+    @Provides
+    fun provideCampaignParticipantDao(database: AppDatabase): CampaignParticipantDao {
+        return database.campaignParticipantDao()
     }
 
     @Provides

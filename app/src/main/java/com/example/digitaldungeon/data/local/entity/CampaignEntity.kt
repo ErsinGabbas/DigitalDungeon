@@ -13,7 +13,5 @@ data class CampaignEntity(
 
     val description: String,
 
-    val createdAt: Long,
-
-    val participants: String? = null
+    val createdAt: Long
 )

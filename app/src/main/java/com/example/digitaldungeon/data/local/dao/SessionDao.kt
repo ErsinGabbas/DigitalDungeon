@@ -29,6 +29,15 @@ interface SessionDao {
     )
 
     @Query(
+        "UPDATE sessions SET title = :title, notes = :notes WHERE id = :id"
+    )
+    suspend fun updateSession(
+        id: Int,
+        title: String,
+        notes: String
+    )
+
+    @Query(
         "DELETE FROM sessions WHERE id = :id"
     )
     suspend fun deleteSession(

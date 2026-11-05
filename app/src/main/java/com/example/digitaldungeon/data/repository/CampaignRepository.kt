@@ -26,6 +26,15 @@ interface CampaignRepository {
         id: Int
     )
 
+    /**
+     * Replaces the name and the description of a campaign.
+     */
+    suspend fun updateCampaign(
+        id: Int,
+        name: String,
+        description: String
+    )
+
     suspend fun updateCampaignParticipants(
         campaignId: Int,
         participants: List<EventParticipant>

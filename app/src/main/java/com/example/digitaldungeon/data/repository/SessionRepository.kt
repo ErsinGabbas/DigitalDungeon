@@ -19,6 +19,15 @@ interface SessionRepository {
         notes: String
     )
 
+    /**
+     * Rewrites the editable fields of an existing session.
+     */
+    suspend fun updateSession(
+        id: Int,
+        title: String,
+        notes: String
+    )
+
     suspend fun deleteSession(
         id: Int
     )

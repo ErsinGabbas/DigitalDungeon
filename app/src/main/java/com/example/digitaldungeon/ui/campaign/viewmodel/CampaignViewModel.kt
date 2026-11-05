@@ -78,12 +78,36 @@ class CampaignViewModel @Inject constructor(
         }
     }
 
+    fun onSearchQueryChange(
+        value: String
+    ) {
+
+        _uiState.update {
+            it.copy(
+                searchQuery = value
+            )
+        }
+    }
+
+    fun clearSearchQuery() {
+
+        _uiState.update {
+            it.copy(searchQuery = "")
+        }
+    }
+
     fun addCampaign() {
 
         val name =
             _uiState.value.campaignName
 
-        if (name.isBlank()) return
+        // Says why instead of silently doing nothing, the same way addSession does.
+        if (name.isBlank()) {
+            _uiState.update {
+                it.copy(error = CAMPAIGN_NAME_REQUIRED)
+            }
+            return
+        }
 
         viewModelScope.launch {
 
@@ -122,7 +146,8 @@ class CampaignViewModel @Inject constructor(
     fun requestDeleteCampaign(campaign: Campaign) {
 
         _uiState.update {
-            it.copy(
+            // Only one dialog at a time: asking to delete closes the edit dialog.
+            it.clearEditDialog().copy(
                 pendingDeletion = PendingCampaignDeletion(
                     campaignId = campaign.id,
                     campaignName = campaign.name
@@ -170,5 +195,116 @@ class CampaignViewModel @Inject constructor(
 
         }
 
+    }
+
+    /**
+     * Opens the edit dialog on a copy of the stored name and description, so the
+     * campaign in the list is only touched once the user saves.
+     */
+    fun requestEditCampaign(campaign: Campaign) {
+
+        _uiState.update {
+            it.copy(
+                // Only one dialog at a time: editing closes a pending delete.
+                pendingDeletion = null,
+                editingCampaign = campaign,
+                editName = campaign.name,
+                editDescription = campaign.description,
+                editError = null
+            )
+        }
+    }
+
+    fun onEditNameChange(
+        value: String
+    ) {
+
+        _uiState.update {
+            // Typing clears the rejection it caused.
+            it.copy(
+                editName = value,
+                editError = null
+            )
+        }
+    }
+
+    fun onEditDescriptionChange(
+        value: String
+    ) {
+
+        _uiState.update {
+            it.copy(
+                editDescription = value,
+                editError = null
+            )
+        }
+    }
+
+    fun cancelEditCampaign() {
+
+        _uiState.update { it.clearEditDialog() }
+    }
+
+    fun confirmEditCampaign() {
+
+        val editing =
+            _uiState.value.editingCampaign ?: return
+
+        val name =
+            _uiState.value.editName.trim()
+
+        // Keeps the dialog open with the reason instead of closing it on a name
+        // the campaign list could never show.
+        if (name.isBlank()) {
+            _uiState.update {
+                it.copy(editError = CAMPAIGN_NAME_REQUIRED)
+            }
+            return
+        }
+
+        val description =
+            _uiState.value.editDescription.trim()
+
+        viewModelScope.launch {
+
+            try {
+                _uiState.update {
+                    it.clearEditDialog().copy(isLoading = true)
+                }
+                repository.updateCampaign(
+                    id = editing.id,
+                    name = name,
+                    description = description
+                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to update campaign"
+                    )
+                }
+            }
+
+        }
+
+    }
+
+    private fun CampaignUiState.clearEditDialog() =
+        copy(
+            editingCampaign = null,
+            editName = "",
+            editDescription = "",
+            editError = null
+        )
+
+    companion object {
+
+        const val CAMPAIGN_NAME_REQUIRED = "Campaign name cannot be empty"
     }
 }

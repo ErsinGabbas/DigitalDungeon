@@ -50,6 +50,16 @@ class SessionRepositoryImpl @Inject constructor(
         )
     }
 
+    override suspend fun updateSession(
+        id: Int,
+        title: String,
+        notes: String
+    ) {
+
+        dao.updateSession(id, title, notes)
+
+    }
+
     override suspend fun deleteSession(
         id: Int
     ) {

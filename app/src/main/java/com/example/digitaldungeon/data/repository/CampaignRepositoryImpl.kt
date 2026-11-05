@@ -1,23 +1,32 @@
 package com.example.digitaldungeon.data.repository
 
+import androidx.room.withTransaction
 import com.example.digitaldungeon.data.local.dao.CampaignDao
+import com.example.digitaldungeon.data.local.dao.CampaignParticipantDao
+import com.example.digitaldungeon.data.local.database.AppDatabase
 import com.example.digitaldungeon.data.local.entity.CampaignEntity
+import com.example.digitaldungeon.data.mapper.toCampaignParticipantEntities
 import com.example.digitaldungeon.data.mapper.toDomain
 import com.example.digitaldungeon.domain.model.Campaign
 import com.example.digitaldungeon.domain.model.EventParticipant
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
+/**
+ * A campaign and its roster live in two tables, so every write that touches both goes through a
+ * single transaction: readers must never see a campaign with a half-written roster.
+ */
 class CampaignRepositoryImpl @Inject constructor(
-    private val dao: CampaignDao
+    private val database: AppDatabase,
+    private val dao: CampaignDao,
+    private val participantDao: CampaignParticipantDao
 ) : CampaignRepository {
 
     override fun getCampaigns(): Flow<List<Campaign>> =
-        dao.getCampaigns().map { entities ->
+        dao.getCampaigns().map { campaigns ->
 
-            entities.map {
+            campaigns.map {
                 it.toDomain()
             }
 
@@ -35,9 +44,9 @@ class CampaignRepositoryImpl @Inject constructor(
     override fun getCampaignByIdFlow(
         id: Int
     ): Flow<Campaign?> =
-        dao.observeCampaignById(id).map { entity ->
+        dao.observeCampaignById(id).map { campaign ->
 
-            entity?.toDomain()
+            campaign?.toDomain()
 
         }
 
@@ -47,16 +56,20 @@ class CampaignRepositoryImpl @Inject constructor(
         participants: List<EventParticipant>
     ) {
 
-        val participantsJson = if (participants.isEmpty()) null else Json.encodeToString(participants)
+        database.withTransaction {
 
-        dao.insertCampaign(
-            CampaignEntity(
-                name = name,
-                description = description,
-                createdAt = System.currentTimeMillis(),
-                participants = participantsJson
+            val campaignId = dao.insertCampaign(
+                CampaignEntity(
+                    name = name,
+                    description = description,
+                    createdAt = System.currentTimeMillis()
+                )
+            ).toInt()
+
+            participantDao.insertParticipants(
+                participants.toCampaignParticipantEntities(campaignId)
             )
-        )
+        }
     }
 
     override suspend fun deleteCampaign(
@@ -67,11 +80,23 @@ class CampaignRepositoryImpl @Inject constructor(
 
     }
 
+    override suspend fun updateCampaign(
+        id: Int,
+        name: String,
+        description: String
+    ) {
+
+        dao.updateCampaign(id, name, description)
+
+    }
+
     override suspend fun updateCampaignParticipants(
         campaignId: Int,
         participants: List<EventParticipant>
     ) {
-        val participantsJson = if (participants.isEmpty()) null else Json.encodeToString(participants)
-        dao.updateCampaignParticipants(campaignId, participantsJson)
+        participantDao.replaceParticipantsForCampaign(
+            campaignId,
+            participants.toCampaignParticipantEntities(campaignId)
+        )
     }
 }
