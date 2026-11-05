@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import com.example.digitaldungeon.data.local.entity.SessionEventEntity
+import com.example.digitaldungeon.data.local.entity.SessionEventType
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -42,9 +43,6 @@ interface SessionEventDao {
         sessionId: Int
     )
 
-    @Query("UPDATE session_events SET content = :content WHERE id = :eventId")
-    suspend fun updateEventContent(eventId: Int, content: String)
-
     @Query("UPDATE session_events SET title = :title, type = :type, content = :content WHERE id = :eventId")
-    suspend fun updateEvent(eventId: Int, title: String, type: com.example.digitaldungeon.data.local.entity.SessionEventType, content: String)
+    suspend fun updateEvent(eventId: Int, title: String, type: SessionEventType, content: String)
 }

@@ -2,15 +2,17 @@ package com.example.digitaldungeon.ui.campaign.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.digitaldungeon.domain.model.Campaign
 import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.SessionRepository
+import com.example.digitaldungeon.ui.campaign.state.CampaignDetailUiState
+import com.example.digitaldungeon.ui.campaign.state.CampaignParticipantsUiState
 import com.example.digitaldungeon.ui.session.state.SessionUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,57 +22,84 @@ class CampaignDetailViewModel @Inject constructor(
     private val sessionRepository: SessionRepository
 ) : ViewModel() {
 
-    private val _campaign =
-        MutableStateFlow<Campaign?>(null)
+    // Campaign state - owns only campaign loading errors
+    private val _campaignUiState =
+        MutableStateFlow(CampaignDetailUiState())
 
-    val campaign =
-        _campaign.asStateFlow()
+    val campaignUiState =
+        _campaignUiState.asStateFlow()
 
+    // Session state - owns only session errors (load / add / delete)
     private val _sessionUiState =
         MutableStateFlow(SessionUiState())
 
     val sessionUiState =
         _sessionUiState.asStateFlow()
 
-    // Participant management state
-    private val _participantName = MutableStateFlow("")
-    val participantName = _participantName.asStateFlow()
+    // Participant management state - owns only participant saving errors
+    private val _participantsUiState =
+        MutableStateFlow(CampaignParticipantsUiState())
 
-    private val _participantLevel = MutableStateFlow("")
-    val participantLevel = _participantLevel.asStateFlow()
-
-    private val _participantMaxHp = MutableStateFlow("")
-    val participantMaxHp = _participantMaxHp.asStateFlow()
-
-    private val _tempParticipants = MutableStateFlow<List<EventParticipant>>(emptyList())
-    val tempParticipants = _tempParticipants.asStateFlow()
-
-    private val _editingParticipant = MutableStateFlow<EventParticipant?>(null)
-    val editingParticipant = _editingParticipant.asStateFlow()
+    val participantsUiState =
+        _participantsUiState.asStateFlow()
 
     private var loadSessionsJob: Job? = null
 
+    private var loadCampaignJob: Job? = null
+
     fun loadCampaign(id: Int) {
 
-        viewModelScope.launch {
+        loadCampaignJob?.cancel()
+
+        loadCampaignJob = viewModelScope.launch {
 
             try {
-                _sessionUiState.value = _sessionUiState.value.copy(isLoading = true)
-                _campaign.value =
-                    campaignRepository.getCampaignById(id)
-                // Load existing participants
-                _tempParticipants.value = _campaign.value?.participants ?: emptyList()
-                _sessionUiState.value = _sessionUiState.value.copy(
-                    isLoading = false,
-                    error = null
-                )
+                _campaignUiState.update { it.copy(isLoading = true) }
+                campaignRepository
+                    .getCampaignByIdFlow(id)
+                    .collect { campaign ->
+
+                        onCampaignParticipantsLoaded(
+                            campaign?.participants ?: emptyList()
+                        )
+
+                        _campaignUiState.update {
+                            it.copy(
+                                campaign = campaign,
+                                isLoading = false,
+                                error = if (campaign == null) "Campaign not found" else null
+                            )
+                        }
+                    }
             } catch (e: Exception) {
-                _sessionUiState.value = _sessionUiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to load campaign"
-                )
+                _campaignUiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to load campaign"
+                    )
+                }
             }
 
+        }
+    }
+
+    /**
+     * Keeps the editable collection in sync with the database without throwing away
+     * edits the user has not saved yet.
+     */
+    private fun onCampaignParticipantsLoaded(
+        participants: List<EventParticipant>
+    ) {
+
+        _participantsUiState.update { current ->
+            if (current.hasUnsavedChanges) {
+                current.copy(savedParticipants = participants)
+            } else {
+                current.copy(
+                    participants = participants,
+                    savedParticipants = participants
+                )
+            }
         }
     }
 
@@ -83,23 +112,26 @@ class CampaignDetailViewModel @Inject constructor(
         loadSessionsJob = viewModelScope.launch {
 
             try {
-                _sessionUiState.value = _sessionUiState.value.copy(isLoading = true)
+                _sessionUiState.update { it.copy(isLoading = true) }
                 sessionRepository
                     .getSessionsForCampaign(campaignId)
                     .collect { sessions ->
 
-                        _sessionUiState.value =
-                            _sessionUiState.value.copy(
+                        _sessionUiState.update {
+                            it.copy(
                                 sessions = sessions,
                                 isLoading = false,
                                 error = null
                             )
+                        }
                     }
             } catch (e: Exception) {
-                _sessionUiState.value = _sessionUiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to load sessions"
-                )
+                _sessionUiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to load sessions"
+                    )
+                }
             }
         }
     }
@@ -108,20 +140,22 @@ class CampaignDetailViewModel @Inject constructor(
         value: String
     ) {
 
-        _sessionUiState.value =
-            _sessionUiState.value.copy(
+        _sessionUiState.update {
+            it.copy(
                 sessionTitle = value
             )
+        }
     }
 
     fun onSessionNotesChange(
         value: String
     ) {
 
-        _sessionUiState.value =
-            _sessionUiState.value.copy(
+        _sessionUiState.update {
+            it.copy(
                 sessionNotes = value
             )
+        }
     }
 
     fun addSession(
@@ -139,25 +173,28 @@ class CampaignDetailViewModel @Inject constructor(
         viewModelScope.launch {
 
             try {
-                _sessionUiState.value = _sessionUiState.value.copy(isLoading = true)
+                _sessionUiState.update { it.copy(isLoading = true) }
                 sessionRepository.addSession(
                     campaignId = campaignId,
                     title = title,
                     notes = notes
                 )
 
-                _sessionUiState.value =
-                    _sessionUiState.value.copy(
+                _sessionUiState.update {
+                    it.copy(
                         sessionTitle = "",
                         sessionNotes = "",
                         isLoading = false,
                         error = null
                     )
+                }
             } catch (e: Exception) {
-                _sessionUiState.value = _sessionUiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to add session"
-                )
+                _sessionUiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to add session"
+                    )
+                }
             }
         }
     }
@@ -169,17 +206,21 @@ class CampaignDetailViewModel @Inject constructor(
         viewModelScope.launch {
 
             try {
-                _sessionUiState.value = _sessionUiState.value.copy(isLoading = true)
+                _sessionUiState.update { it.copy(isLoading = true) }
                 sessionRepository.deleteSession(id)
-                _sessionUiState.value = _sessionUiState.value.copy(
-                    isLoading = false,
-                    error = null
-                )
+                _sessionUiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
             } catch (e: Exception) {
-                _sessionUiState.value = _sessionUiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to delete session"
-                )
+                _sessionUiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to delete session"
+                    )
+                }
             }
 
         }
@@ -187,100 +228,159 @@ class CampaignDetailViewModel @Inject constructor(
 
     // Participant management methods
     fun onParticipantNameChange(value: String) {
-        _participantName.value = value
+        _participantsUiState.update {
+            it.copy(participantName = value)
+        }
     }
 
     fun onParticipantLevelChange(value: String) {
-        _participantLevel.value = value
+        _participantsUiState.update {
+            it.copy(participantLevel = value)
+        }
     }
 
     fun onParticipantMaxHpChange(value: String) {
-        _participantMaxHp.value = value
+        _participantsUiState.update {
+            it.copy(participantMaxHp = value)
+        }
     }
 
     fun addParticipant() {
-        val name = _participantName.value
-        val level = _participantLevel.value.toIntOrNull()
-        val maxHp = _participantMaxHp.value.toIntOrNull()
 
-        if (name.isBlank() || level == null || maxHp == null) return
+        _participantsUiState.update { state ->
 
-        val participant = EventParticipant(
-            name = name,
-            level = level,
-            maxHp = maxHp
-        )
+            val participant =
+                state.toParticipantOrNull() ?: return@update state
 
-        _tempParticipants.value = _tempParticipants.value + participant
-        _participantName.value = ""
-        _participantLevel.value = ""
-        _participantMaxHp.value = ""
+            state.copy(
+                participants = state.participants + participant
+            ).clearForm()
+        }
     }
 
-    fun removeParticipant(participant: EventParticipant) {
-        _tempParticipants.value = _tempParticipants.value - participant
-    }
+    fun editParticipant(index: Int) {
 
-    fun editParticipant(participant: EventParticipant) {
-        _editingParticipant.value = participant
-        _participantName.value = participant.name
-        _participantLevel.value = participant.level.toString()
-        _participantMaxHp.value = participant.maxHp.toString()
+        _participantsUiState.update { state ->
+
+            val participant =
+                state.participants.getOrNull(index) ?: return@update state
+
+            state.copy(
+                editingIndex = index,
+                participantName = participant.name,
+                participantLevel = participant.level.toString(),
+                participantMaxHp = participant.maxHp.toString()
+            )
+        }
     }
 
     fun updateParticipant() {
-        val editing = _editingParticipant.value ?: return
-        val name = _participantName.value
-        val level = _participantLevel.value.toIntOrNull()
-        val maxHp = _participantMaxHp.value.toIntOrNull()
 
-        if (name.isBlank() || level == null || maxHp == null) return
+        _participantsUiState.update { state ->
 
-        val updatedParticipant = EventParticipant(
-            name = name,
-            level = level,
-            maxHp = maxHp
-        )
+            val index =
+                state.editingIndex ?: return@update state
 
-        // Replace in temp participants
-        _tempParticipants.value = _tempParticipants.value.map {
-            if (it == editing) updatedParticipant else it
+            if (index !in state.participants.indices) return@update state
+
+            val participant =
+                state.toParticipantOrNull() ?: return@update state
+
+            state.copy(
+                participants = state.participants.mapIndexed { i, existing ->
+                    if (i == index) participant else existing
+                }
+            ).clearForm()
         }
-
-        // Clear edit state
-        _editingParticipant.value = null
-        _participantName.value = ""
-        _participantLevel.value = ""
-        _participantMaxHp.value = ""
     }
 
-    fun cancelEdit() {
-        _editingParticipant.value = null
-        _participantName.value = ""
-        _participantLevel.value = ""
-        _participantMaxHp.value = ""
-    }
+    fun removeParticipant(index: Int) {
 
-    fun removeExistingParticipant(participant: EventParticipant) {
-        val currentParticipants = _campaign.value?.participants ?: emptyList()
-        val updatedParticipants = currentParticipants - participant
-        _tempParticipants.value = updatedParticipants
-    }
+        _participantsUiState.update { state ->
 
-    fun saveParticipants(campaignId: Int) {
-        viewModelScope.launch {
-            try {
-                campaignRepository.updateCampaignParticipants(
-                    campaignId = campaignId,
-                    participants = _tempParticipants.value
-                )
-                // Reload campaign to get updated data
-                _campaign.value = campaignRepository.getCampaignById(campaignId)
-            } catch (e: Exception) {
-                _sessionUiState.value = _sessionUiState.value.copy(
-                    error = e.message ?: "Failed to save participants"
+            if (index !in state.participants.indices) return@update state
+
+            val updated =
+                state.participants.filterIndexed { i, _ -> i != index }
+
+            val editingIndex = state.editingIndex
+
+            if (editingIndex == null) {
+                state.copy(participants = updated)
+            } else if (editingIndex == index) {
+                // The row being edited is gone - drop the edit form as well.
+                state.copy(participants = updated).clearForm()
+            } else {
+                // Keep editing the same row, its position may have shifted.
+                state.copy(
+                    participants = updated,
+                    editingIndex = if (index < editingIndex) editingIndex - 1 else editingIndex
                 )
             }
         }
     }
+
+    fun cancelEdit() {
+        _participantsUiState.update { it.clearForm() }
+    }
+
+    fun saveParticipants(campaignId: Int) {
+
+        viewModelScope.launch {
+
+            val participants =
+                _participantsUiState.value.participants
+
+            try {
+                _participantsUiState.update {
+                    it.copy(isSaving = true)
+                }
+
+                campaignRepository.updateCampaignParticipants(
+                    campaignId = campaignId,
+                    participants = participants
+                )
+
+                // getCampaignByIdFlow pushes the stored value back, this only marks
+                // the collection as clean right away.
+                _participantsUiState.update {
+                    it.copy(
+                        savedParticipants = participants,
+                        isSaving = false,
+                        error = null
+                    )
+                }
+            } catch (e: Exception) {
+                _participantsUiState.update {
+                    it.copy(
+                        isSaving = false,
+                        error = e.message ?: "Failed to save participants"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun CampaignParticipantsUiState.toParticipantOrNull(): EventParticipant? {
+
+        val name = participantName.trim()
+        val level = participantLevel.toIntOrNull()
+        val maxHp = participantMaxHp.toIntOrNull()
+
+        if (name.isBlank() || level == null || maxHp == null) return null
+
+        return EventParticipant(
+            name = name,
+            level = level,
+            maxHp = maxHp
+        )
+    }
+
+    private fun CampaignParticipantsUiState.clearForm() =
+        copy(
+            participantName = "",
+            participantLevel = "",
+            participantMaxHp = "",
+            editingIndex = null
+        )
 }

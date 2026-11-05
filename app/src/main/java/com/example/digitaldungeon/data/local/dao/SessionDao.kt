@@ -16,6 +16,13 @@ interface SessionDao {
         campaignId: Int
     ): Flow<List<SessionEntity>>
 
+    @Query(
+        "SELECT * FROM sessions WHERE id = :id"
+    )
+    fun getSessionById(
+        id: Int
+    ): Flow<SessionEntity?>
+
     @Insert
     suspend fun insertSession(
         session: SessionEntity

@@ -12,8 +12,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.digitaldungeon.domain.model.SessionEvent
+import com.example.digitaldungeon.domain.model.SessionEventType
 
 @Composable
 fun SessionEventCard(
@@ -21,16 +23,14 @@ fun SessionEventCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
+    val containerColor = event.type.containerColor()
+    val contentColor = event.type.contentColor()
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = when (event.type) {
-                com.example.digitaldungeon.domain.model.SessionEventType.SCENE -> MaterialTheme.colorScheme.primaryContainer
-                com.example.digitaldungeon.domain.model.SessionEventType.COMBAT -> MaterialTheme.colorScheme.errorContainer
-                com.example.digitaldungeon.domain.model.SessionEventType.DIALOGUE -> MaterialTheme.colorScheme.secondaryContainer
-                com.example.digitaldungeon.domain.model.SessionEventType.DISCOVERY -> MaterialTheme.colorScheme.tertiaryContainer
-                com.example.digitaldungeon.domain.model.SessionEventType.NOTE -> MaterialTheme.colorScheme.surfaceVariant
-            }
+            containerColor = containerColor,
+            contentColor = contentColor
         )
     ) {
         Column(
@@ -42,23 +42,20 @@ fun SessionEventCard(
             ) {
                 Text(
                     text = event.type.name,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                    style = MaterialTheme.typography.labelSmall
                 )
                 event.title?.let {
                     Text(
                         text = it,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        style = MaterialTheme.typography.titleMedium
                     )
                 }
             }
-            
+
             Text(
                 text = event.content,
                 style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(top = 8.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer
+                modifier = Modifier.padding(top = 8.dp)
             )
 
             if (event.participants.isNotEmpty()) {
@@ -67,14 +64,12 @@ fun SessionEventCard(
                 ) {
                     Text(
                         text = "Participants:",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        style = MaterialTheme.typography.labelSmall
                     )
                     event.participants.forEach { participant ->
                         Text(
                             text = "${participant.name} (Lvl ${participant.level}, HP: ${participant.maxHp})",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer,
                             modifier = Modifier.padding(start = 8.dp, top = 2.dp)
                         )
                     }
@@ -102,3 +97,28 @@ fun SessionEventCard(
         }
     }
 }
+
+@Composable
+private fun SessionEventType.containerColor(): Color =
+    when (this) {
+        SessionEventType.SCENE -> MaterialTheme.colorScheme.primaryContainer
+        SessionEventType.COMBAT -> MaterialTheme.colorScheme.errorContainer
+        SessionEventType.DIALOGUE -> MaterialTheme.colorScheme.secondaryContainer
+        SessionEventType.DISCOVERY -> MaterialTheme.colorScheme.tertiaryContainer
+        SessionEventType.NOTE -> MaterialTheme.colorScheme.surfaceVariant
+    }
+
+/**
+ * Content color must match the container role, otherwise text on the error,
+ * secondary, tertiary and surface variants is painted with the primary
+ * container's "on" color and can lose contrast.
+ */
+@Composable
+private fun SessionEventType.contentColor(): Color =
+    when (this) {
+        SessionEventType.SCENE -> MaterialTheme.colorScheme.onPrimaryContainer
+        SessionEventType.COMBAT -> MaterialTheme.colorScheme.onErrorContainer
+        SessionEventType.DIALOGUE -> MaterialTheme.colorScheme.onSecondaryContainer
+        SessionEventType.DISCOVERY -> MaterialTheme.colorScheme.onTertiaryContainer
+        SessionEventType.NOTE -> MaterialTheme.colorScheme.onSurfaceVariant
+    }

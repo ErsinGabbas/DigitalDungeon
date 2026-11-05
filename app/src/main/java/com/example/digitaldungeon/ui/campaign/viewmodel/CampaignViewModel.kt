@@ -6,6 +6,7 @@ import com.example.digitaldungeon.ui.campaign.state.CampaignUiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import javax.inject.Inject
@@ -25,23 +26,26 @@ class CampaignViewModel @Inject constructor(
         viewModelScope.launch {
 
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true)
+                _uiState.update { it.copy(isLoading = true) }
                 repository.getCampaigns()
                     .collect { campaigns ->
 
-                        _uiState.value =
-                            _uiState.value.copy(
+                        _uiState.update {
+                            it.copy(
                                 campaigns = campaigns,
                                 isLoading = false,
                                 error = null
                             )
+                        }
 
                     }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to load campaigns"
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to load campaigns"
+                    )
+                }
             }
 
         }
@@ -52,10 +56,11 @@ class CampaignViewModel @Inject constructor(
         value: String
     ) {
 
-        _uiState.value =
-            _uiState.value.copy(
+        _uiState.update {
+            it.copy(
                 campaignName = value
             )
+        }
 
     }
 
@@ -63,10 +68,11 @@ class CampaignViewModel @Inject constructor(
         value: String
     ) {
 
-        _uiState.value =
-            _uiState.value.copy(
+        _uiState.update {
+            it.copy(
                 campaignDescription = value
             )
+        }
     }
 
     fun addCampaign() {
@@ -79,24 +85,27 @@ class CampaignViewModel @Inject constructor(
         viewModelScope.launch {
 
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true)
+                _uiState.update { it.copy(isLoading = true) }
                 repository.addCampaign(
                     name = name,
                     description = _uiState.value.campaignDescription
                 )
 
-                _uiState.value =
-                    _uiState.value.copy(
+                _uiState.update {
+                    it.copy(
                         campaignName = "",
                         campaignDescription = "",
                         isLoading = false,
                         error = null
                     )
+                }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to add campaign"
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to add campaign"
+                    )
+                }
             }
 
         }
@@ -108,17 +117,21 @@ class CampaignViewModel @Inject constructor(
         viewModelScope.launch {
 
             try {
-                _uiState.value = _uiState.value.copy(isLoading = true)
+                _uiState.update { it.copy(isLoading = true) }
                 repository.deleteCampaign(id)
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = null
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = null
+                    )
+                }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message ?: "Failed to delete campaign"
-                )
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        error = e.message ?: "Failed to delete campaign"
+                    )
+                }
             }
 
         }

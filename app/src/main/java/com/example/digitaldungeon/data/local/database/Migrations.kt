@@ -5,20 +5,8 @@ import androidx.sqlite.db.SupportSQLiteDatabase
 
 /**
  * Migration from version 3 to 4
- * 
- * IMPORTANT: This migration is currently empty because we don't know the exact
- * schema changes that occurred between versions 3 and 4. When implementing
- * actual migrations, you need to:
- * 
- * 1. Know the previous schema (version 3)
- * 2. Know the new schema (version 4)
- * 3. Write SQL statements to transform the old schema to the new schema
- * 
- * Example migration:
- * database.execSQL("ALTER TABLE campaigns ADD COLUMN new_column TEXT")
- * 
- * For production apps, consider using Room's AutoMigration or export schemas
- * to track changes properly.
+ * No-op: schema for version 3 was never exported, so no changes can be replayed.
+ * Kept so that the 3 -> 7 migration path stays connected.
  */
 val MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(database: SupportSQLiteDatabase) {
@@ -72,8 +60,25 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
 val MIGRATION_6_7 = object : Migration(6, 7) {
     override fun migrate(db: SupportSQLiteDatabase) {
         db.execSQL("""
-            ALTER TABLE campaigns 
+            ALTER TABLE campaigns
             ADD COLUMN participants TEXT
         """)
     }
 }
+
+/**
+ * Every migration the app ships with, in one place so that the Hilt provider and
+ * the migration tests cannot drift apart.
+ */
+val ALL_MIGRATIONS = arrayOf(
+    MIGRATION_3_4,
+    MIGRATION_4_5,
+    MIGRATION_5_6,
+    MIGRATION_6_7
+)
+
+/**
+ * Versions with no migration path: their schemas were never exported, so such
+ * databases are recreated from scratch instead of crashing on open.
+ */
+val DESTRUCTIVELY_MIGRATED_VERSIONS = intArrayOf(1, 2)

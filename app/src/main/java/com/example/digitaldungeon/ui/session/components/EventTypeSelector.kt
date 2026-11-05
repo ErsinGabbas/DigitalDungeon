@@ -1,8 +1,10 @@
 package com.example.digitaldungeon.ui.session.components
 
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,14 +17,19 @@ fun EventTypeSelector(
     onTypeSelected: (SessionEventType) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier) {
-        SessionEventType.values().forEach { type ->
-            Button(
+    Row(
+        modifier = modifier
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        SessionEventType.entries.forEach { type ->
+            FilterChip(
+                selected = type == selectedType,
                 onClick = { onTypeSelected(type) },
-                modifier = Modifier.padding(end = 4.dp)
-            ) {
-                Text(type.name)
-            }
+                label = {
+                    Text(type.name)
+                }
+            )
         }
     }
 }

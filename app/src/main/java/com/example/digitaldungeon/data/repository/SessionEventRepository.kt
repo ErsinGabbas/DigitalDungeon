@@ -4,6 +4,8 @@ import com.example.digitaldungeon.data.local.dao.SessionEventDao
 import com.example.digitaldungeon.data.local.entity.SessionEventEntity
 import com.example.digitaldungeon.data.mapper.toDomain
 import com.example.digitaldungeon.data.mapper.toEntity
+import com.example.digitaldungeon.domain.model.SessionEvent
+import com.example.digitaldungeon.domain.model.SessionEventType
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -11,7 +13,7 @@ class SessionEventRepository(
     private val dao: SessionEventDao
 ) {
 
-    fun getEventsForSession(sessionId: Int): Flow<List<com.example.digitaldungeon.domain.model.SessionEvent>> {
+    fun getEventsForSession(sessionId: Int): Flow<List<SessionEvent>> {
         return dao.getEventsForSession(sessionId)
             .map { entities ->
                 entities.map { it.toDomain() }
@@ -20,7 +22,7 @@ class SessionEventRepository(
 
     suspend fun addEvent(
         sessionId: Int,
-        type: com.example.digitaldungeon.domain.model.SessionEventType,
+        type: SessionEventType,
         title: String?,
         content: String
     ) {
@@ -45,14 +47,10 @@ class SessionEventRepository(
     }
 
 
-    suspend fun updateEventContent(eventId: Int, content: String) {
-        dao.updateEventContent(eventId, content)
-    }
-
     suspend fun updateEvent(
         eventId: Int,
         title: String,
-        type: com.example.digitaldungeon.domain.model.SessionEventType,
+        type: SessionEventType,
         content: String
     ) {
         dao.updateEvent(eventId, title, type.toEntity(), content)

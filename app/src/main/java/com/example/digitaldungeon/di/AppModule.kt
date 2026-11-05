@@ -6,10 +6,8 @@ import com.example.digitaldungeon.data.local.dao.CampaignDao
 import com.example.digitaldungeon.data.local.dao.SessionDao
 import com.example.digitaldungeon.data.local.dao.SessionEventDao
 import com.example.digitaldungeon.data.local.database.AppDatabase
-import com.example.digitaldungeon.data.local.database.MIGRATION_3_4
-import com.example.digitaldungeon.data.local.database.MIGRATION_4_5
-import com.example.digitaldungeon.data.local.database.MIGRATION_5_6
-import com.example.digitaldungeon.data.local.database.MIGRATION_6_7
+import com.example.digitaldungeon.data.local.database.ALL_MIGRATIONS
+import com.example.digitaldungeon.data.local.database.DESTRUCTIVELY_MIGRATED_VERSIONS
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.SessionRepository
 import com.example.digitaldungeon.data.repository.SessionEventRepository
@@ -32,7 +30,10 @@ object AppModule {
             AppDatabase::class.java,
             "digital_dungeon_db"
         )
-            .addMigrations(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+            .addMigrations(*ALL_MIGRATIONS)
+            // Schemas for versions 1-2 were never exported, so no migration path exists.
+            // Such installations are recreated from scratch; the 3 -> 7 path stays migrational.
+            .fallbackToDestructiveMigrationFrom(*DESTRUCTIVELY_MIGRATED_VERSIONS)
             .build()
     }
 

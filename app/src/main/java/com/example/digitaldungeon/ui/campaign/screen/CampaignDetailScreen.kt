@@ -1,21 +1,29 @@
 package com.example.digitaldungeon.ui.campaign.screen
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,19 +33,18 @@ import androidx.navigation.NavController
 import com.example.digitaldungeon.ui.campaign.viewmodel.CampaignDetailViewModel
 import com.example.digitaldungeon.ui.session.components.SessionCard
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CampaignDetailScreen(
     campaignId: Int,
     navController: NavController,
     viewModel: CampaignDetailViewModel = hiltViewModel()
 ) {
-    val state by viewModel.sessionUiState.collectAsState()
-    val campaign by viewModel.campaign.collectAsState()
-    val participantName by viewModel.participantName.collectAsState()
-    val participantLevel by viewModel.participantLevel.collectAsState()
-    val participantMaxHp by viewModel.participantMaxHp.collectAsState()
-    val tempParticipants by viewModel.tempParticipants.collectAsState()
-    val editingParticipant by viewModel.editingParticipant.collectAsState()
+    val state by viewModel.sessionUiState.collectAsStateWithLifecycle()
+    val campaignState by viewModel.campaignUiState.collectAsStateWithLifecycle()
+    val participantsState by viewModel.participantsUiState.collectAsStateWithLifecycle()
+
+    val campaign = campaignState.campaign
 
     LaunchedEffect(campaignId) {
 
@@ -50,46 +57,128 @@ fun CampaignDetailScreen(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Error display
-        state.error?.let { error ->
-            Text(
-                text = error,
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(vertical = 8.dp)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(campaign?.name ?: "Campaign")
+                },
+                navigationIcon = {
+                    IconButton(
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
             )
         }
+    ) { paddingValues ->
 
-        Text(
-            text = campaign?.name ?: "Campaign",
-            style = MaterialTheme.typography.headlineMedium
-        )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        campaign?.description
-            ?.takeIf { it.isNotBlank() }
-            ?.let { description ->
+            // Session error display
+            item {
+                state.error?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+            }
+
+            item {
                 Text(
-                    text = description,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = campaign?.name ?: "Campaign",
+                    style = MaterialTheme.typography.headlineMedium
                 )
             }
 
-        // Show current participants
-        val currentCampaign = campaign
-        if (currentCampaign?.participants?.isNotEmpty() == true) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-            ) {
-                Text(
-                    text = "Campaign Participants:",
-                    style = MaterialTheme.typography.titleSmall
-                )
-                currentCampaign.participants.forEach { participant ->
+            // Campaign error display
+            item {
+                campaignState.error?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(vertical = 8.dp)
+                    )
+                }
+            }
+
+            item {
+                campaign?.description
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { description ->
+                        Text(
+                            text = description,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+            }
+
+            // Participants - single editable collection seeded from the campaign
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Campaign Participants:",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+
+                    if (participantsState.hasUnsavedChanges) {
+                        Text(
+                            text = "Unsaved changes",
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
+            }
+
+            // Participant error display
+            item {
+                participantsState.error?.let { error ->
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    )
+                }
+            }
+
+            if (participantsState.participants.isEmpty()) {
+                item {
+                    Text(
+                        text = "No participants yet",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
+                    )
+                }
+            } else {
+                itemsIndexed(participantsState.participants) { index, participant ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -103,13 +192,13 @@ fun CampaignDetailScreen(
                             horizontalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
                             Button(
-                                onClick = { viewModel.editParticipant(participant) },
+                                onClick = { viewModel.editParticipant(index) },
                                 modifier = Modifier.padding(horizontal = 4.dp)
                             ) {
                                 Text("Edit")
                             }
                             Button(
-                                onClick = { viewModel.removeExistingParticipant(participant) },
+                                onClick = { viewModel.removeParticipant(index) },
                                 modifier = Modifier.padding(horizontal = 4.dp)
                             ) {
                                 Text("Remove")
@@ -118,153 +207,155 @@ fun CampaignDetailScreen(
                     }
                 }
             }
-        }
 
-        // Participant management section
-        Text(
-            text = "Manage Participants",
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(top = 8.dp)
-        )
+            // Participant management section
+            item {
+                Text(
+                    text = "Manage Participants",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            TextField(
-                value = participantName,
-                onValueChange = viewModel::onParticipantNameChange,
-                label = { Text("Name") },
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-            TextField(
-                value = participantLevel,
-                onValueChange = viewModel::onParticipantLevelChange,
-                label = { Text("Lvl") },
-                modifier = Modifier.width(60.dp),
-                singleLine = true
-            )
-            TextField(
-                value = participantMaxHp,
-                onValueChange = viewModel::onParticipantMaxHpChange,
-                label = { Text("HP") },
-                modifier = Modifier.width(60.dp),
-                singleLine = true
-            )
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (editingParticipant != null) {
-                Button(
-                    onClick = viewModel::updateParticipant,
-                    modifier = Modifier.weight(1f)
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text("Update Participant")
-                }
-                Button(
-                    onClick = viewModel::cancelEdit,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Cancel")
-                }
-            } else {
-                Button(
-                    onClick = viewModel::addParticipant,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Add Participant")
-                }
-                Button(
-                    onClick = { viewModel.saveParticipants(campaignId) },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Save Changes")
+                    TextField(
+                        value = participantsState.participantName,
+                        onValueChange = viewModel::onParticipantNameChange,
+                        label = { Text("Name") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true
+                    )
+                    TextField(
+                        value = participantsState.participantLevel,
+                        onValueChange = viewModel::onParticipantLevelChange,
+                        label = { Text("Lvl") },
+                        modifier = Modifier.width(60.dp),
+                        singleLine = true
+                    )
+                    TextField(
+                        value = participantsState.participantMaxHp,
+                        onValueChange = viewModel::onParticipantMaxHpChange,
+                        label = { Text("HP") },
+                        modifier = Modifier.width(60.dp),
+                        singleLine = true
+                    )
                 }
             }
-        }
 
-        // Show temp participants being added
-        if (tempParticipants.isNotEmpty()) {
-            Column(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)
-            ) {
-                Text(
-                    text = "Participants to save:",
-                    style = MaterialTheme.typography.labelSmall
-                )
-                tempParticipants.forEach { participant ->
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text("${participant.name} (Lvl ${participant.level}, HP: ${participant.maxHp})")
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    if (participantsState.isEditing) {
                         Button(
-                            onClick = { viewModel.removeParticipant(participant) },
-                            modifier = Modifier.padding(start = 8.dp)
+                            onClick = viewModel::updateParticipant,
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Text("Remove")
+                            Text("Update Participant")
+                        }
+                        Button(
+                            onClick = viewModel::cancelEdit,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Cancel")
+                        }
+                    } else {
+                        Button(
+                            onClick = viewModel::addParticipant,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text("Add Participant")
                         }
                     }
                 }
             }
-        }
 
-        Text(
-            text = "Campaign ID: $campaignId",
-            style = MaterialTheme.typography.bodySmall
-        )
-
-        TextField(
-            value = state.sessionTitle,
-            onValueChange = {
-                viewModel
-                    .onSessionTitleChange(it)
-            },
-            label = {
-                Text("Session Title")
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        TextField(
-            value = state.sessionNotes,
-            onValueChange = {
-                viewModel
-                    .onSessionNotesChange(it)
-            },
-            label = {
-                Text("Session Notes")
-            },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Button(
-            onClick = {
-                viewModel.addSession(
-                    campaignId
-                )
-            },
-            enabled = !state.isLoading
-        ) {
-            if (state.isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.padding(4.dp),
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Text("Add Session")
+            // Always available - editing a participant must never hide it
+            item {
+                Button(
+                    onClick = { viewModel.saveParticipants(campaignId) },
+                    enabled = !participantsState.isSaving,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                ) {
+                    if (participantsState.isSaving) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(4.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Save Changes")
+                    }
+                }
             }
-        }
 
-        if (state.isLoading && state.sessions.isEmpty()) {
-            CircularProgressIndicator(modifier = Modifier.padding(16.dp))
-        }
+            item {
+                Text(
+                    text = "Campaign ID: $campaignId",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
-        LazyColumn {
+            item {
+                TextField(
+                    value = state.sessionTitle,
+                    onValueChange = {
+                        viewModel
+                            .onSessionTitleChange(it)
+                    },
+                    label = {
+                        Text("Session Title")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                TextField(
+                    value = state.sessionNotes,
+                    onValueChange = {
+                        viewModel
+                            .onSessionNotesChange(it)
+                    },
+                    label = {
+                        Text("Session Notes")
+                    },
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                Button(
+                    onClick = {
+                        viewModel.addSession(
+                            campaignId
+                        )
+                    },
+                    enabled = !state.isLoading
+                ) {
+                    if (state.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(4.dp),
+                            strokeWidth = 2.dp
+                        )
+                    } else {
+                        Text("Add Session")
+                    }
+                }
+            }
+
+            if (state.isLoading && state.sessions.isEmpty()) {
+                item {
+                    CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                }
+            }
+
             items(state.sessions) { session ->
                 SessionCard(
                     session = session,

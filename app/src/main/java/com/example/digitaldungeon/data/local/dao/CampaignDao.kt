@@ -21,7 +21,12 @@ interface CampaignDao {
     @Query("SELECT * FROM campaigns WHERE id = :id")
     suspend fun getCampaignById(
         id: Int
-    ): CampaignEntity
+    ): CampaignEntity?
+
+    @Query("SELECT * FROM campaigns WHERE id = :id")
+    fun observeCampaignById(
+        id: Int
+    ): Flow<CampaignEntity?>
 
     @Query("UPDATE campaigns SET participants = :participants WHERE id = :campaignId")
     suspend fun updateCampaignParticipants(campaignId: Int, participants: String?)

@@ -21,6 +21,16 @@ class SessionRepository(
 
             }
 
+    fun getSessionById(
+        id: Int
+    ) =
+        dao.getSessionById(id)
+            .map { entity ->
+
+                entity?.toDomain()
+
+            }
+
     suspend fun addSession(
         campaignId: Int,
         title: String,

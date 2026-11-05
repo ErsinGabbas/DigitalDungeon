@@ -12,6 +12,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -37,22 +39,27 @@ class SessionDetailViewModel @Inject constructor(
     // -------------------------
     private fun loadSession() {
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            try {
-                val sessions = sessionRepository.getSessionsForCampaign(0)
-                sessions.collect { sessionList ->
-                    val session = sessionList.find { it.id == sessionId }
-                    _uiState.value = _uiState.value.copy(
-                        session = session,
-                        isLoading = false
-                    )
+            _uiState.update { it.copy(isLoading = true) }
+
+            sessionRepository.getSessionById(sessionId)
+                .catch { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            error = throwable.message,
+                            isLoading = false
+                        )
+                    }
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    error = e.message,
-                    isLoading = false
-                )
-            }
+                .collect { session ->
+                    // session == null is a valid state (session deleted),
+                    // so loading must stop on the very first emission
+                    _uiState.update {
+                        it.copy(
+                            session = session,
+                            isLoading = false
+                        )
+                    }
+                }
         }
     }
 
@@ -64,10 +71,10 @@ class SessionDetailViewModel @Inject constructor(
             try {
                 sessionEventRepository.getEventsForSession(sessionId)
                     .collect { events ->
-                        _uiState.value = _uiState.value.copy(events = events)
+                        _uiState.update { it.copy(events = events) }
                     }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
@@ -76,11 +83,11 @@ class SessionDetailViewModel @Inject constructor(
     // QUICK NOTE
     // -------------------------
     fun onQuickNoteTextChanged(text: String) {
-        _uiState.value = _uiState.value.copy(quickNoteText = text)
+        _uiState.update { it.copy(quickNoteText = text) }
     }
 
     fun onEventTypeSelected(type: SessionEventType) {
-        _uiState.value = _uiState.value.copy(selectedEventType = type)
+        _uiState.update { it.copy(selectedEventType = type) }
     }
 
     fun onAddQuickNote() {
@@ -96,9 +103,9 @@ class SessionDetailViewModel @Inject constructor(
                     content = text
                 )
 
-                _uiState.value = _uiState.value.copy(quickNoteText = "")
+                _uiState.update { it.copy(quickNoteText = "") }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
@@ -111,7 +118,7 @@ class SessionDetailViewModel @Inject constructor(
             try {
                 sessionEventRepository.deleteEvent(eventId)
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
@@ -120,24 +127,26 @@ class SessionDetailViewModel @Inject constructor(
     // EDIT
     // -------------------------
     fun onEditEvent(event: SessionEvent) {
-        _uiState.value = _uiState.value.copy(
-            editingEvent = event,
-            editTitle = event.title ?: "",
-            editType = event.type,
-            editContent = event.content
-        )
+        _uiState.update {
+            it.copy(
+                editingEvent = event,
+                editTitle = event.title ?: "",
+                editType = event.type,
+                editContent = event.content
+            )
+        }
     }
 
     fun onEditTitleChange(title: String) {
-        _uiState.value = _uiState.value.copy(editTitle = title)
+        _uiState.update { it.copy(editTitle = title) }
     }
 
     fun onEditTypeChange(type: SessionEventType) {
-        _uiState.value = _uiState.value.copy(editType = type)
+        _uiState.update { it.copy(editType = type) }
     }
 
     fun onEditContentChange(content: String) {
-        _uiState.value = _uiState.value.copy(editContent = content)
+        _uiState.update { it.copy(editContent = content) }
     }
 
     fun onUpdateEvent(eventId: Int) {
@@ -150,31 +159,35 @@ class SessionDetailViewModel @Inject constructor(
                     content = _uiState.value.editContent
                 )
 
-                _uiState.value = _uiState.value.copy(
-                    editingEvent = null,
-                    editTitle = "",
-                    editType = SessionEventType.NOTE,
-                    editContent = ""
-                )
+                _uiState.update {
+                    it.copy(
+                        editingEvent = null,
+                        editTitle = "",
+                        editType = SessionEventType.NOTE,
+                        editContent = ""
+                    )
+                }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                _uiState.update { it.copy(error = e.message) }
             }
         }
     }
 
     fun onEditDialogDismiss() {
-        _uiState.value = _uiState.value.copy(
-            editingEvent = null,
-            editTitle = "",
-            editType = SessionEventType.NOTE,
-            editContent = ""
-        )
+        _uiState.update {
+            it.copy(
+                editingEvent = null,
+                editTitle = "",
+                editType = SessionEventType.NOTE,
+                editContent = ""
+            )
+        }
     }
 
     // -------------------------
     // ERROR
     // -------------------------
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        _uiState.update { it.copy(error = null) }
     }
 }

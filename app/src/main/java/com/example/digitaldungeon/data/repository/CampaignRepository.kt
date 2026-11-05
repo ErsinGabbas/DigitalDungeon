@@ -4,6 +4,8 @@ import com.example.digitaldungeon.data.local.dao.CampaignDao
 import com.example.digitaldungeon.data.local.entity.CampaignEntity
 import com.example.digitaldungeon.data.mapper.toDomain
 import com.example.digitaldungeon.domain.model.Campaign
+import com.example.digitaldungeon.domain.model.EventParticipant
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 
@@ -22,20 +24,29 @@ class CampaignRepository(
 
     suspend fun getCampaignById(
         id: Int
-    ): Campaign {
+    ): Campaign? {
 
         return dao
             .getCampaignById(id)
-            .toDomain()
+            ?.toDomain()
     }
+
+    fun getCampaignByIdFlow(
+        id: Int
+    ): Flow<Campaign?> =
+        dao.observeCampaignById(id).map { entity ->
+
+            entity?.toDomain()
+
+        }
 
     suspend fun addCampaign(
         name: String,
         description: String,
-        participants: List<com.example.digitaldungeon.domain.model.EventParticipant> = emptyList()
+        participants: List<EventParticipant> = emptyList()
     ) {
 
-        val participantsJson = if (participants.isEmpty()) null else kotlinx.serialization.json.Json.encodeToString(participants)
+        val participantsJson = if (participants.isEmpty()) null else Json.encodeToString(participants)
 
         dao.insertCampaign(
             CampaignEntity(
@@ -57,7 +68,7 @@ class CampaignRepository(
 
     suspend fun updateCampaignParticipants(
         campaignId: Int,
-        participants: List<com.example.digitaldungeon.domain.model.EventParticipant>
+        participants: List<EventParticipant>
     ) {
         val participantsJson = if (participants.isEmpty()) null else Json.encodeToString(participants)
         dao.updateCampaignParticipants(campaignId, participantsJson)
