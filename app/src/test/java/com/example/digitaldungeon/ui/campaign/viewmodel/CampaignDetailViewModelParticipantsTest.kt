@@ -1,12 +1,14 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.campaign
 import com.example.digitaldungeon.testing.participant
+import com.example.digitaldungeon.ui.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -128,7 +130,7 @@ class CampaignDetailViewModelParticipantsTest {
             viewModel.addParticipant()
 
             assertEquals(
-                "Participant name cannot be empty",
+                UiText.of(R.string.campaign_participant_name_required),
                 viewModel.participantsUiState.value.error
             )
             assertTrue(viewModel.participantsUiState.value.participants.isEmpty())
@@ -144,7 +146,7 @@ class CampaignDetailViewModelParticipantsTest {
             viewModel.addParticipant()
 
             assertEquals(
-                "Level must be a whole number",
+                UiText.of(R.string.campaign_participant_level_not_a_number),
                 viewModel.participantsUiState.value.error
             )
             assertTrue(viewModel.participantsUiState.value.participants.isEmpty())
@@ -164,8 +166,11 @@ class CampaignDetailViewModelParticipantsTest {
             viewModel.addParticipant()
 
             assertEquals(
-                "Level must be between ${CampaignDetailViewModel.MIN_LEVEL} " +
-                    "and ${CampaignDetailViewModel.MAX_LEVEL}",
+                UiText.of(
+                    R.string.campaign_participant_level_out_of_range,
+                    CampaignDetailViewModel.MIN_LEVEL,
+                    CampaignDetailViewModel.MAX_LEVEL
+                ),
                 viewModel.participantsUiState.value.error
             )
             assertTrue(viewModel.participantsUiState.value.participants.isEmpty())
@@ -216,8 +221,11 @@ class CampaignDetailViewModelParticipantsTest {
             viewModel.addParticipant()
 
             assertEquals(
-                "Level must be between ${CampaignDetailViewModel.MIN_LEVEL} " +
-                    "and ${CampaignDetailViewModel.MAX_LEVEL}",
+                UiText.of(
+                    R.string.campaign_participant_level_out_of_range,
+                    CampaignDetailViewModel.MIN_LEVEL,
+                    CampaignDetailViewModel.MAX_LEVEL
+                ),
                 viewModel.participantsUiState.value.error
             )
             assertTrue(viewModel.participantsUiState.value.participants.isEmpty())
@@ -233,7 +241,7 @@ class CampaignDetailViewModelParticipantsTest {
             viewModel.addParticipant()
 
             assertEquals(
-                "Max HP must be a whole number",
+                UiText.of(R.string.campaign_participant_max_hp_not_a_number),
                 viewModel.participantsUiState.value.error
             )
             assertTrue(viewModel.participantsUiState.value.participants.isEmpty())
@@ -253,8 +261,11 @@ class CampaignDetailViewModelParticipantsTest {
             viewModel.addParticipant()
 
             assertEquals(
-                "Max HP must be between ${CampaignDetailViewModel.MIN_MAX_HP} " +
-                    "and ${CampaignDetailViewModel.MAX_MAX_HP}",
+                UiText.of(
+                    R.string.campaign_participant_max_hp_out_of_range,
+                    CampaignDetailViewModel.MIN_MAX_HP,
+                    CampaignDetailViewModel.MAX_MAX_HP
+                ),
                 viewModel.participantsUiState.value.error
             )
             assertTrue(viewModel.participantsUiState.value.participants.isEmpty())
@@ -274,8 +285,11 @@ class CampaignDetailViewModelParticipantsTest {
             viewModel.addParticipant()
 
             assertEquals(
-                "Max HP must be between ${CampaignDetailViewModel.MIN_MAX_HP} " +
-                    "and ${CampaignDetailViewModel.MAX_MAX_HP}",
+                UiText.of(
+                    R.string.campaign_participant_max_hp_out_of_range,
+                    CampaignDetailViewModel.MIN_MAX_HP,
+                    CampaignDetailViewModel.MAX_MAX_HP
+                ),
                 viewModel.participantsUiState.value.error
             )
             assertTrue(viewModel.participantsUiState.value.participants.isEmpty())
@@ -637,7 +651,7 @@ class CampaignDetailViewModelParticipantsTest {
             advanceUntilIdle()
 
             val state = viewModel.participantsUiState.value
-            assertEquals("participants not saved", state.error)
+            assertEquals(UiText.Raw("participants not saved"), state.error)
             assertFalse(state.isSaving)
         }
 

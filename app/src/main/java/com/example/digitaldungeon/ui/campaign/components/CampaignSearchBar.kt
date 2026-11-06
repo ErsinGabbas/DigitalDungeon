@@ -11,8 +11,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 /**
@@ -33,7 +35,7 @@ fun CampaignSearchBar(
         value = query,
         onValueChange = onQueryChange,
         label = {
-            Text("Search campaigns")
+            Text(stringResource(R.string.campaign_search_label))
         },
         singleLine = true,
         leadingIcon = {
@@ -50,7 +52,8 @@ fun CampaignSearchBar(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear search"
+                        contentDescription =
+                            stringResource(R.string.campaign_search_clear)
                     )
                 }
             }

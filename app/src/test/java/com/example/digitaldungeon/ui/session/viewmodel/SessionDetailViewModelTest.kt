@@ -1,12 +1,15 @@
 package com.example.digitaldungeon.ui.session.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.SessionEventType
+import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.FakeSessionEventRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.session
 import com.example.digitaldungeon.testing.sessionEvent
+import com.example.digitaldungeon.ui.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -27,11 +30,13 @@ class SessionDetailViewModelTest {
 
     private lateinit var sessionRepository: FakeSessionRepository
     private lateinit var eventRepository: FakeSessionEventRepository
+    private lateinit var campaignRepository: FakeCampaignRepository
 
     @Before
     fun setUp() {
         sessionRepository = FakeSessionRepository()
         eventRepository = FakeSessionEventRepository()
+        campaignRepository = FakeCampaignRepository()
     }
 
     /** Creates the ViewModel and lets the `init` subscriptions settle. */
@@ -39,6 +44,7 @@ class SessionDetailViewModelTest {
         SessionDetailViewModel(
             sessionRepository = sessionRepository,
             sessionEventRepository = eventRepository,
+            campaignRepository = campaignRepository,
             savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to sessionId))
         ).also { advanceUntilIdle() }
 
@@ -59,6 +65,7 @@ class SessionDetailViewModelTest {
         SessionDetailViewModel(
             sessionRepository = sessionRepository,
             sessionEventRepository = eventRepository,
+            campaignRepository = campaignRepository,
             savedStateHandle = SavedStateHandle()
         )
     }
@@ -99,7 +106,7 @@ class SessionDetailViewModelTest {
 
             val viewModel = createViewModel()
 
-            assertEquals("session query failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("session query failed"), viewModel.uiState.value.error)
             assertFalse(viewModel.uiState.value.isLoading)
         }
 
@@ -127,7 +134,7 @@ class SessionDetailViewModelTest {
 
             val viewModel = createViewModel()
 
-            assertEquals("event query failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("event query failed"), viewModel.uiState.value.error)
         }
 
     // ----------------------------------------------------------- quick note
@@ -219,7 +226,7 @@ class SessionDetailViewModelTest {
             viewModel.onAddQuickNote()
             advanceUntilIdle()
 
-            assertEquals("insert failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("insert failed"), viewModel.uiState.value.error)
             assertEquals("the goblin rolls a natural 20", viewModel.uiState.value.quickNoteText)
         }
 
@@ -292,7 +299,7 @@ class SessionDetailViewModelTest {
             viewModel.onConfirmDeleteEvent()
             advanceUntilIdle()
 
-            assertEquals("delete failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("delete failed"), viewModel.uiState.value.error)
         }
 
     // ----------------------------------------------- mutually exclusive dialogs
@@ -434,7 +441,7 @@ class SessionDetailViewModelTest {
             advanceUntilIdle()
 
             val state = viewModel.uiState.value
-            assertEquals("update failed", state.error)
+            assertEquals(UiText.Raw("update failed"), state.error)
             assertEquals(event, state.editingEvent)
             assertEquals("new title", state.editTitle)
         }
@@ -467,11 +474,53 @@ class SessionDetailViewModelTest {
             viewModel.onQuickNoteTextChanged("something")
             viewModel.onAddQuickNote()
             advanceUntilIdle()
-            assertEquals("insert failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("insert failed"), viewModel.uiState.value.error)
 
             viewModel.clearError()
 
             assertNull(viewModel.uiState.value.error)
+        }
+
+    /**
+     * Room and the platform both throw messageless exceptions, and a banner reading
+     * "null" explains nothing - so the one case where a sentence of our own is both
+     * possible and right falls back to a resource.
+     */
+    @Test
+    fun repositoryFailureWithoutAMessage_fallsBackToALocalizedError() =
+        runTest(mainDispatcherRule.testDispatcher) {
+
+            eventRepository.addEventError = IllegalStateException()
+
+            val viewModel = createViewModel()
+            viewModel.onQuickNoteTextChanged("something")
+
+            viewModel.onAddQuickNote()
+            advanceUntilIdle()
+
+            assertEquals(
+                UiText.of(R.string.session_error_unknown),
+                viewModel.uiState.value.error
+            )
+        }
+
+    @Test
+    fun repositoryFailureWithABlankMessage_fallsBackToALocalizedError() =
+        runTest(mainDispatcherRule.testDispatcher) {
+
+            // A blank message is as useless as none at all, and must not reach the screen.
+            eventRepository.addEventError = IllegalStateException("   ")
+
+            val viewModel = createViewModel()
+            viewModel.onQuickNoteTextChanged("something")
+
+            viewModel.onAddQuickNote()
+            advanceUntilIdle()
+
+            assertEquals(
+                UiText.of(R.string.session_error_unknown),
+                viewModel.uiState.value.error
+            )
         }
 
     private companion object {

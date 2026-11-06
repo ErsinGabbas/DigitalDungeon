@@ -1,5 +1,6 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
+import com.example.digitaldungeon.testing.FakeBackupService
 import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.campaign
@@ -28,14 +29,16 @@ class CampaignViewModelSearchTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var repository: FakeCampaignRepository
+    private lateinit var backupService: FakeBackupService
 
     @Before
     fun setUp() {
         repository = FakeCampaignRepository()
+        backupService = FakeBackupService()
     }
 
     private fun TestScope.createViewModel(): CampaignViewModel =
-        CampaignViewModel(repository).also { advanceUntilIdle() }
+        CampaignViewModel(repository, backupService).also { advanceUntilIdle() }
 
     private val stored = listOf(
         campaign(id = 1, name = "Curse of Strahd", description = "gothic horror in Barovia"),

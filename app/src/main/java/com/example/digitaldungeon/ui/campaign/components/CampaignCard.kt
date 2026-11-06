@@ -13,10 +13,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.Campaign
 import com.example.digitaldungeon.domain.model.EventParticipant
+import com.example.digitaldungeon.ui.components.CreatedAtLabel
+import com.example.digitaldungeon.ui.components.PREVIEW_CREATED_AT
+import com.example.digitaldungeon.ui.components.PREVIEW_CREATED_AT_EARLIER
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 /**
@@ -49,6 +54,13 @@ fun CampaignCard(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(campaign.name, style = MaterialTheme.typography.titleLarge)
+
+                // Directly under the name, where it reads as a subtitle of it:
+                // the date has been in the database since the first version and
+                // is the only thing that tells two similarly named campaigns
+                // apart, or says which of them is the one from last year.
+                CreatedAtLabel(createdAt = campaign.createdAt)
+
                 Text(campaign.description, style = MaterialTheme.typography.bodyMedium)
                 if (campaign.participants.isNotEmpty()) {
                     ParticipantsCard(participants = campaign.participants)
@@ -64,19 +76,19 @@ fun CampaignCard(
                 Button(
                     onClick = onOpen
                 ) {
-                    Text("Open")
+                    Text(stringResource(R.string.campaign_open_button))
                 }
 
                 Button(
                     onClick = onEdit
                 ) {
-                    Text("Edit")
+                    Text(stringResource(R.string.common_edit))
                 }
 
                 Button(
                     onClick = onDelete
                 ) {
-                    Text("Delete")
+                    Text(stringResource(R.string.common_delete))
                 }
             }
         }
@@ -96,7 +108,7 @@ private fun ParticipantsCard(participants: List<EventParticipant>) {
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "Participants",
+                text = stringResource(R.string.campaign_participants_card_title),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSecondaryContainer
             )
@@ -111,7 +123,11 @@ private fun ParticipantsCard(participants: List<EventParticipant>) {
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                     Text(
-                        text = "Lvl ${participant.level} | HP: ${participant.maxHp}",
+                        text = stringResource(
+                            R.string.campaign_participant_stats,
+                            participant.level,
+                            participant.maxHp
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer
                     )
@@ -130,7 +146,7 @@ private fun CampaignCardPreview() {
                 id = 1,
                 name = "Curse of Strahd",
                 description = "Gothic horror in the valley of Barovia",
-                createdAt = 0L,
+                createdAt = PREVIEW_CREATED_AT_EARLIER,
                 participants = listOf(
                     EventParticipant(name = "Ireena Kolyana", level = 4, maxHp = 28),
                     EventParticipant(name = "Ismark the Lesser", level = 3, maxHp = 24)
@@ -152,7 +168,7 @@ private fun CampaignCardWithoutParticipantsPreview() {
                 id = 2,
                 name = "Tomb of Annihilation",
                 description = "A jungle death march",
-                createdAt = 0L
+                createdAt = PREVIEW_CREATED_AT
             ),
             onEdit = {},
             onDelete = {},

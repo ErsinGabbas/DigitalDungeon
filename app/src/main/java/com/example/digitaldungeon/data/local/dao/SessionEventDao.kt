@@ -28,7 +28,24 @@ interface SessionEventDao {
         event: SessionEventEntity
     ): Long
 
+    /**
+     * Every event of every session, for a full backup. Ordered so the produced document is
+     * stable: the same database always exports byte-identical content.
+     */
+    @Query(
+        "SELECT * FROM session_events ORDER BY sessionId ASC, orderIndex ASC, id ASC"
+    )
+    suspend fun getAllEvents(): List<SessionEventEntity>
 
+    @Insert
+    suspend fun insertEvents(
+        events: List<SessionEventEntity>
+    )
+
+    @Query(
+        "DELETE FROM session_events"
+    )
+    suspend fun deleteAllEvents()
 
     @Query(
         "DELETE FROM session_events WHERE id = :id"
@@ -37,8 +54,23 @@ interface SessionEventDao {
         id: Int
     )
 
-    @Query("UPDATE session_events SET title = :title, type = :type, content = :content WHERE id = :eventId")
-    suspend fun updateEvent(eventId: Int, title: String, type: SessionEventType, content: String)
+    /**
+     * Rewrites the editable fields of an event, including its participant snapshot.
+     *
+     * [participants] is the already encoded column payload (see `encodeParticipants`), and it
+     * replaces the stored snapshot as a whole - `null` clears it.
+     */
+    @Query(
+        "UPDATE session_events SET title = :title, type = :type, content = :content, " +
+            "participants = :participants WHERE id = :eventId"
+    )
+    suspend fun updateEvent(
+        eventId: Int,
+        title: String,
+        type: SessionEventType,
+        content: String,
+        participants: String?
+    )
 
     @Query(
         "SELECT sessionId FROM session_events WHERE id = :eventId"

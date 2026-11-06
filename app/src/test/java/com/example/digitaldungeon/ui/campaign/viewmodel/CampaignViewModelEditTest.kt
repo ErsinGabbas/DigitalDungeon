@@ -1,9 +1,12 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
+import com.example.digitaldungeon.R
+import com.example.digitaldungeon.testing.FakeBackupService
 import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.campaign
 import com.example.digitaldungeon.ui.campaign.state.PendingCampaignDeletion
+import com.example.digitaldungeon.ui.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -30,14 +33,16 @@ class CampaignViewModelEditTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var repository: FakeCampaignRepository
+    private lateinit var backupService: FakeBackupService
 
     @Before
     fun setUp() {
         repository = FakeCampaignRepository()
+        backupService = FakeBackupService()
     }
 
     private fun TestScope.createViewModel(): CampaignViewModel =
-        CampaignViewModel(repository).also { advanceUntilIdle() }
+        CampaignViewModel(repository, backupService).also { advanceUntilIdle() }
 
     private val target = campaign(
         id = 11,
@@ -124,7 +129,7 @@ class CampaignViewModelEditTest {
             advanceUntilIdle()
 
             assertEquals(
-                CampaignViewModel.CAMPAIGN_NAME_REQUIRED,
+                UiText.of(R.string.campaign_name_required),
                 viewModel.uiState.value.editError
             )
         }
@@ -186,7 +191,7 @@ class CampaignViewModelEditTest {
             viewModel.confirmEditCampaign()
             advanceUntilIdle()
             assertEquals(
-                CampaignViewModel.CAMPAIGN_NAME_REQUIRED,
+                UiText.of(R.string.campaign_name_required),
                 viewModel.uiState.value.editError
             )
 
@@ -317,7 +322,7 @@ class CampaignViewModelEditTest {
             viewModel.confirmEditCampaign()
             advanceUntilIdle()
 
-            assertEquals("update failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("update failed"), viewModel.uiState.value.error)
             assertFalse(viewModel.uiState.value.isLoading)
         }
 

@@ -28,6 +28,25 @@ interface SessionDao {
         session: SessionEntity
     )
 
+    /**
+     * Every session of every campaign, for a full backup. Ordered so the produced document is
+     * stable: the same database always exports byte-identical content.
+     */
+    @Query(
+        "SELECT * FROM sessions ORDER BY campaignId ASC, id ASC"
+    )
+    suspend fun getAllSessions(): List<SessionEntity>
+
+    @Insert
+    suspend fun insertSessions(
+        sessions: List<SessionEntity>
+    )
+
+    @Query(
+        "DELETE FROM sessions"
+    )
+    suspend fun deleteAllSessions()
+
     @Query(
         "UPDATE sessions SET title = :title, notes = :notes WHERE id = :id"
     )

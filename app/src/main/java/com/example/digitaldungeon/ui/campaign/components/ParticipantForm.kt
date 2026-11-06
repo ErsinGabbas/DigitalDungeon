@@ -10,11 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 /**
@@ -51,14 +53,18 @@ fun ParticipantForm(
             TextField(
                 value = name,
                 onValueChange = onNameChange,
-                label = { Text("Name") },
+                label = {
+                    Text(stringResource(R.string.campaign_participant_name_label))
+                },
                 modifier = Modifier.weight(1f),
                 singleLine = true
             )
             TextField(
                 value = level,
                 onValueChange = onLevelChange,
-                label = { Text("Lvl") },
+                label = {
+                    Text(stringResource(R.string.campaign_participant_level_label))
+                },
                 modifier = Modifier.width(60.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -69,7 +75,9 @@ fun ParticipantForm(
             TextField(
                 value = maxHp,
                 onValueChange = onMaxHpChange,
-                label = { Text("HP") },
+                label = {
+                    Text(stringResource(R.string.campaign_participant_max_hp_label))
+                },
                 modifier = Modifier.width(60.dp),
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(
@@ -88,20 +96,20 @@ fun ParticipantForm(
                     onClick = onUpdate,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Update Participant")
+                    Text(stringResource(R.string.campaign_participant_update))
                 }
                 Button(
                     onClick = onCancelEdit,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Cancel")
+                    Text(stringResource(R.string.common_cancel))
                 }
             } else {
                 Button(
                     onClick = onAdd,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Add Participant")
+                    Text(stringResource(R.string.campaign_participant_add))
                 }
             }
         }

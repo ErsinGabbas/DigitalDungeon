@@ -18,6 +18,19 @@ interface CampaignDao {
     @Insert
     suspend fun insertCampaign(campaign: CampaignEntity): Long
 
+    /**
+     * Every campaign row, without its roster, for a full backup. Ordered by id so the produced
+     * document is stable across exports of the same database.
+     */
+    @Query("SELECT * FROM campaigns ORDER BY id ASC")
+    suspend fun getAllCampaigns(): List<CampaignEntity>
+
+    @Insert
+    suspend fun insertCampaigns(campaigns: List<CampaignEntity>)
+
+    @Query("DELETE FROM campaigns")
+    suspend fun deleteAllCampaigns()
+
     @Query("DELETE FROM campaigns WHERE id = :id")
     suspend fun deleteCampaign(id: Int)
 

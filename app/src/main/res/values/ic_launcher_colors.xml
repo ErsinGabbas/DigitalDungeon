@@ -1,0 +1,7 @@
+<resources>
+    <!--
+        Sampled from the artwork's own backdrop, so the adaptive icon's background layer
+        continues the picture instead of framing it with a second, different colour.
+    -->
+    <color name="ic_launcher_background">#06050A</color>
+</resources>

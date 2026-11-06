@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Русская локализация интерфейса сессий. -->
+<resources>
+
+    <!-- ============================ Экран сессии ============================ -->
+
+    <string name="session_detail_title_fallback">Сессия</string>
+    <string name="session_action_back">Назад</string>
+    <string name="session_action_share_full_log">Поделиться полным журналом сессии</string>
+    <string name="session_share_chooser_title">Поделиться журналом сессии</string>
+
+    <string name="session_timeline_heading">Хронология</string>
+    <string name="session_quick_note_heading">Быстрая заметка</string>
+    <string name="session_quick_note_placeholder">Быстрая заметка…</string>
+    <string name="session_action_add">Добавить</string>
+
+    <string name="session_search_placeholder">Поиск по событиям…</string>
+    <string name="session_action_clear_search">Очистить поиск</string>
+    <string name="session_action_clear_filters">Сбросить фильтры</string>
+
+    <!--
+        Число согласуется со вторым аргументом (всего событий): «из 1 события»,
+        но «из 2 событий», «из 5 событий». Формы few/many/other совпадают — после
+        «из» нужен родительный падеж множественного числа.
+    -->
+    <plurals name="session_filter_status">
+        <item quantity="one">Показано %1$d из %2$d события. Пока включён фильтр, порядок менять нельзя; при отправке выгружается весь журнал.</item>
+        <item quantity="few">Показано %1$d из %2$d событий. Пока включён фильтр, порядок менять нельзя; при отправке выгружается весь журнал.</item>
+        <item quantity="many">Показано %1$d из %2$d событий. Пока включён фильтр, порядок менять нельзя; при отправке выгружается весь журнал.</item>
+        <item quantity="other">Показано %1$d из %2$d событий. Пока включён фильтр, порядок менять нельзя; при отправке выгружается весь журнал.</item>
+    </plurals>
+
+    <string name="session_timeline_empty_title">Событий пока нет</string>
+    <string name="session_timeline_empty_message">Выберите тип выше и запишите первую заметку.</string>
+    <string name="session_timeline_no_matches_title">Под фильтр ничего не попало</string>
+    <string name="session_timeline_no_matches_message">События никуда не делись — попробуйте другой запрос или тип.</string>
+
+    <string name="session_error_unknown">Что-то пошло не так. Попробуйте ещё раз.</string>
+
+    <!-- ============================ Общие действия ============================ -->
+
+    <string name="session_action_save">Сохранить</string>
+    <string name="session_action_cancel">Отмена</string>
+    <string name="session_action_edit">Изменить</string>
+    <string name="session_action_delete">Удалить</string>
+
+    <!-- ========================= Диалог изменения события ========================= -->
+
+    <string name="event_edit_title">Изменить событие</string>
+    <string name="event_field_title_label">Заголовок</string>
+    <string name="event_field_type_label">Тип события</string>
+    <string name="event_field_content_label">Описание</string>
+
+    <!-- ========================= Подтверждение удаления ========================= -->
+
+    <string name="event_delete_title">Удалить событие?</string>
+    <string name="event_delete_message">Это действие нельзя отменить.</string>
+    <string name="event_delete_empty_summary">(пустое событие)</string>
+
+    <!-- ============================ Карточка события ============================ -->
+
+    <string name="event_action_move_up">Переместить событие выше</string>
+    <string name="event_action_move_down">Переместить событие ниже</string>
+
+    <!--
+        Недоступная стрелка сама объясняет причину: TalkBack скажет «выключено», но
+        не скажет, почему. Причины две — край списка и активный фильтр, — и
+        формулировки у них разные.
+    -->
+    <string name="event_action_move_up_first">Переместить событие выше, недоступно: это первое событие</string>
+    <string name="event_action_move_down_last">Переместить событие ниже, недоступно: это последнее событие</string>
+    <string name="event_action_move_up_filtered">Переместить событие выше, недоступно, пока включён фильтр</string>
+    <string name="event_action_move_down_filtered">Переместить событие ниже, недоступно, пока включён фильтр</string>
+
+    <!-- Подсказка на карточке при долгом нажатии на недоступную стрелку -->
+    <string name="event_reorder_blocked_first">Это уже первое событие в хронологии.</string>
+    <string name="event_reorder_blocked_last">Это уже последнее событие в хронологии.</string>
+    <string name="event_reorder_blocked_by_filter">Пока включён фильтр, порядок менять нельзя: событие выше на экране — не то событие, что выше в сохранённом порядке. Сбросьте поиск и фильтр по типу, чтобы менять порядок.</string>
+
+    <string name="event_participants_heading">Участники:</string>
+    <!-- %1$s имя, %2$d уровень, %3$d максимум HP -->
+    <string name="event_participant_line">%1$s (ур. %2$d, HP: %3$d)</string>
+
+    <!-- ========================== Выбор участников ========================== -->
+
+    <string name="event_participants_label">Участники</string>
+    <string name="event_participants_label_snapshot">Участники (снимок события)</string>
+
+    <!-- ============================== Типы событий ============================== -->
+
+    <string name="event_type_filter_all">Все</string>
+    <string name="event_type_scene">Сцена</string>
+    <string name="event_type_combat">Бой</string>
+    <string name="event_type_dialogue">Диалог</string>
+    <string name="event_type_discovery">Находка</string>
+    <string name="event_type_note">Заметка</string>
+
+    <!-- ============================ Экспорт в Markdown ============================ -->
+
+    <string name="session_export_untitled_session">Сессия без названия</string>
+    <string name="session_export_timeline_heading">Хронология</string>
+    <string name="session_export_empty_timeline">_Событий не записано._</string>
+    <string name="session_export_participants_label">Участники</string>
+    <!-- %1$s имя, %2$d уровень, %3$d максимум HP -->
+    <string name="session_export_participant_line">%1$s (ур. %2$d, HP %3$d)</string>
+
+</resources>

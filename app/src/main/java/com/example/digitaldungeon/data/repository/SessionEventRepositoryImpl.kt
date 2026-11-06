@@ -2,7 +2,9 @@ package com.example.digitaldungeon.data.repository
 
 import com.example.digitaldungeon.data.local.dao.SessionEventDao
 import com.example.digitaldungeon.data.local.entity.SessionEventEntity
+import com.example.digitaldungeon.data.mapper.encodeParticipants
 import com.example.digitaldungeon.data.mapper.toDomain
+import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +26,8 @@ class SessionEventRepositoryImpl @Inject constructor(
         sessionId: Int,
         type: SessionEventType,
         title: String?,
-        content: String
+        content: String,
+        participants: List<EventParticipant>
     ) {
         val maxOrderIndex = dao.getMaxOrderIndex(sessionId) ?: -1
         val newOrderIndex = maxOrderIndex + 1
@@ -36,7 +39,9 @@ class SessionEventRepositoryImpl @Inject constructor(
                 title = title,
                 content = content,
                 orderIndex = newOrderIndex,
-                timestamp = System.currentTimeMillis()
+                timestamp = System.currentTimeMillis(),
+                // Copied into the row, not referenced: the roster may change, the snapshot may not.
+                participants = encodeParticipants(participants)
             )
         )
     }
@@ -51,9 +56,10 @@ class SessionEventRepositoryImpl @Inject constructor(
         eventId: Int,
         title: String,
         type: SessionEventType,
-        content: String
+        content: String,
+        participants: List<EventParticipant>
     ) {
-        dao.updateEvent(eventId, title, type, content)
+        dao.updateEvent(eventId, title, type, content, encodeParticipants(participants))
     }
 
 

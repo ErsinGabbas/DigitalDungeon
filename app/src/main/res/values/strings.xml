@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">DigitalDungeon</string>
+    <!--
+        The launcher label is the product name, not a phrase: it stays "DigitalDungeon"
+        in every language, so it is deliberately not translatable rather than copied
+        verbatim into each locale.
+    -->
+    <string name="app_name" translatable="false">DigitalDungeon</string>
 </resources>

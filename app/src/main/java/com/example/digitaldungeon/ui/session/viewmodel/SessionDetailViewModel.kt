@@ -3,14 +3,20 @@ package com.example.digitaldungeon.ui.session.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.digitaldungeon.R
+import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.SessionEventRepository
 import com.example.digitaldungeon.data.repository.SessionEventRepository.MoveDirection
 import com.example.digitaldungeon.data.repository.SessionRepository
+import com.example.digitaldungeon.domain.export.SessionMarkdownLabels
 import com.example.digitaldungeon.domain.export.formatSessionAsMarkdown
+import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
 import com.example.digitaldungeon.ui.session.state.SessionDetailUiState
+import com.example.digitaldungeon.ui.text.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +29,7 @@ import javax.inject.Inject
 class SessionDetailViewModel @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val sessionEventRepository: SessionEventRepository,
+    private val campaignRepository: CampaignRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -30,6 +37,11 @@ class SessionDetailViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(SessionDetailUiState())
     val uiState: StateFlow<SessionDetailUiState> = _uiState.asStateFlow()
+
+    /** Which campaign [campaignRosterJob] is currently following, if any. */
+    private var observedCampaignId: Int? = null
+
+    private var campaignRosterJob: Job? = null
 
     init {
         loadSession()
@@ -47,7 +59,7 @@ class SessionDetailViewModel @Inject constructor(
                 .catch { throwable ->
                     _uiState.update {
                         it.copy(
-                            error = throwable.message,
+                            error = throwable.toUiText(),
                             isLoading = false
                         )
                     }
@@ -61,7 +73,64 @@ class SessionDetailViewModel @Inject constructor(
                             isLoading = false
                         )
                     }
+
+                    // The roster hangs off the campaign, which is only reachable
+                    // through the session — so it cannot be requested in init
+                    onCampaignIdResolved(session?.campaignId)
                 }
+        }
+    }
+
+    // -------------------------
+    // CAMPAIGN ROSTER
+    //
+    // Only feeds the two pickers. Events are never re-read through it: each one
+    // stores its own copy of the cast, and that copy is what the card shows.
+    // -------------------------
+    /**
+     * Re-points the roster subscription when the session finally names its
+     * campaign (or names a different one).
+     *
+     * Guarded by [observedCampaignId] so that an ordinary session edit, which
+     * makes `getSessionById` emit again with the same campaign, does not restart
+     * the query.
+     */
+    private fun onCampaignIdResolved(campaignId: Int?) {
+        if (campaignId == observedCampaignId) return
+
+        observedCampaignId = campaignId
+        campaignRosterJob?.cancel()
+
+        if (campaignId == null) {
+            onCampaignRosterLoaded(emptyList())
+            return
+        }
+
+        campaignRosterJob = viewModelScope.launch {
+            try {
+                campaignRepository.getCampaignByIdFlow(campaignId)
+                    .collect { campaign ->
+                        onCampaignRosterLoaded(campaign?.participants ?: emptyList())
+                    }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.toUiText()) }
+            }
+        }
+    }
+
+    private fun onCampaignRosterLoaded(roster: List<EventParticipant>) {
+        _uiState.update { state ->
+            state.copy(
+                campaignParticipants = roster,
+                // A pending pick must not outlive the person it names: whoever
+                // left the campaign before the note was saved drops out of the
+                // selection as well, otherwise the chip would vanish while the
+                // choice silently stayed.
+                quickNoteParticipants = state.quickNoteParticipants.filter { it in roster }
+                // editParticipants is deliberately left alone. It is a snapshot
+                // the user is editing, not a view of the roster, and pruning it
+                // here would erase exactly what this feature has to preserve.
+            )
         }
     }
 
@@ -76,7 +145,7 @@ class SessionDetailViewModel @Inject constructor(
                         _uiState.update { it.copy(events = events) }
                     }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.toUiText()) }
             }
         }
     }
@@ -143,7 +212,7 @@ class SessionDetailViewModel @Inject constructor(
                     direction = direction
                 )
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.toUiText()) }
             }
         }
     }
@@ -158,12 +227,24 @@ class SessionDetailViewModel @Inject constructor(
      * exporting the current selection would hand the user a silently truncated
      * log. Returning a plain string keeps every Android concern (the share
      * intent) on the screen side.
+     *
+     * @param labels the wording of the document. The screen resolves it from string
+     *   resources (`sessionMarkdownLabels()`) and passes it in, so the log comes out
+     *   in the language of the app without a `Context` reaching this ViewModel or the
+     *   pure formatter. Defaults to the English wording, which is what lets a JVM test
+     *   call this without resources.
      */
-    fun buildSessionMarkdown(): String? {
+    fun buildSessionMarkdown(
+        labels: SessionMarkdownLabels = SessionMarkdownLabels()
+    ): String? {
         val state = _uiState.value
         val session = state.session ?: return null
 
-        return formatSessionAsMarkdown(session = session, events = state.events)
+        return formatSessionAsMarkdown(
+            session = session,
+            events = state.events,
+            labels = labels
+        )
     }
 
     // -------------------------
@@ -177,6 +258,18 @@ class SessionDetailViewModel @Inject constructor(
         _uiState.update { it.copy(selectedEventType = type) }
     }
 
+    /**
+     * Adds or removes [participant] from the cast of the note being written.
+     *
+     * A toggle rather than a setter, because that is what a chip does, and it
+     * keeps "nobody selected" reachable — the usual state of a quick note.
+     */
+    fun onQuickNoteParticipantToggled(participant: EventParticipant) {
+        _uiState.update {
+            it.copy(quickNoteParticipants = it.quickNoteParticipants.toggle(participant))
+        }
+    }
+
     fun onAddQuickNote() {
         viewModelScope.launch {
             try {
@@ -188,12 +281,22 @@ class SessionDetailViewModel @Inject constructor(
                     sessionId = sessionId,
                     type = state.selectedEventType,
                     title = null,
-                    content = state.quickNoteText
+                    content = state.quickNoteText,
+                    // Copied into the event here and never consulted again
+                    participants = state.quickNoteParticipants
                 )
 
-                _uiState.update { it.copy(quickNoteText = "") }
+                // The cast is cleared along with the text: carrying it over to
+                // the next note would quietly attribute an unrelated entry to
+                // the same people. Naming participants stays a deliberate act.
+                _uiState.update {
+                    it.copy(
+                        quickNoteText = "",
+                        quickNoteParticipants = emptyList()
+                    )
+                }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.toUiText()) }
             }
         }
     }
@@ -221,7 +324,7 @@ class SessionDetailViewModel @Inject constructor(
             try {
                 sessionEventRepository.deleteEvent(event.id)
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.toUiText()) }
             }
         }
     }
@@ -241,7 +344,11 @@ class SessionDetailViewModel @Inject constructor(
                 editingEvent = event,
                 editTitle = event.title ?: "",
                 editType = event.type,
-                editContent = event.content
+                editContent = event.content,
+                // Seeded from the event, because the save path writes this list
+                // back wholesale. Opening the dialog and only touching the text
+                // must therefore leave the stored cast exactly as it was.
+                editParticipants = event.participants
             )
         }
     }
@@ -258,19 +365,41 @@ class SessionDetailViewModel @Inject constructor(
         _uiState.update { it.copy(editContent = content) }
     }
 
+    /**
+     * Adds or removes [participant] from the snapshot the dialog will store.
+     *
+     * Works on [SessionDetailUiState.editParticipants], which may name people the
+     * campaign no longer lists; those are offered as options too, so the only way
+     * one leaves an event is by being unchecked here.
+     */
+    fun onEditParticipantToggled(participant: EventParticipant) {
+        _uiState.update {
+            it.copy(editParticipants = it.editParticipants.toggle(participant))
+        }
+    }
+
     fun onUpdateEvent(eventId: Int) {
         viewModelScope.launch {
             try {
+                // One snapshot of the state, so the four fields written are the
+                // four fields the dialog showed
+                val state = _uiState.value
+
                 sessionEventRepository.updateEvent(
                     eventId = eventId,
-                    title = _uiState.value.editTitle,
-                    type = _uiState.value.editType,
-                    content = _uiState.value.editContent
+                    title = state.editTitle,
+                    type = state.editType,
+                    content = state.editContent,
+                    // updateEvent replaces the stored cast with whatever it gets,
+                    // so the list has to be passed every time. It starts out as
+                    // the event's own participants (see onEditEvent): leaving it
+                    // out here is what used to erase them on a text-only edit.
+                    participants = state.editParticipants
                 )
 
                 _uiState.update { it.clearEditDialog() }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.toUiText()) }
             }
         }
     }
@@ -286,11 +415,40 @@ class SessionDetailViewModel @Inject constructor(
         _uiState.update { it.copy(error = null) }
     }
 
+    /**
+     * A failure as something the screen can show.
+     *
+     * The text of an exception is not translatable — it comes from Room, from the
+     * platform, from anywhere but this app — so it travels as [UiText.Raw]. Only the
+     * case of no message at all falls back to a sentence of our own, which is where a
+     * resource id is both possible and right.
+     */
+    private fun Throwable.toUiText(): UiText =
+        message
+            ?.takeIf { it.isNotBlank() }
+            ?.let { UiText.Raw(it) }
+            ?: UiText.of(R.string.session_error_unknown)
+
     private fun SessionDetailUiState.clearEditDialog(): SessionDetailUiState =
         copy(
             editingEvent = null,
             editTitle = "",
             editType = SessionEventType.NOTE,
-            editContent = ""
+            editContent = "",
+            editParticipants = emptyList()
         )
+
+    /**
+     * Membership is by value, matching how the chips are drawn: a participant is
+     * in or out, never in twice, and the objects put into the list are the ones
+     * copied into the event.
+     */
+    private fun List<EventParticipant>.toggle(
+        participant: EventParticipant
+    ): List<EventParticipant> =
+        if (contains(participant)) {
+            filterNot { it == participant }
+        } else {
+            this + participant
+        }
 }

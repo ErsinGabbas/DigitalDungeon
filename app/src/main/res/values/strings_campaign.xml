@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    User-facing text of the campaign UI: the campaign list, the campaign detail
+    screen, the participant editor and the whole-database backup flow.
+
+    A file of its own rather than more lines in strings.xml: Android merges every
+    XML file in res/values, so splitting the catalogue per feature keeps two
+    people editing two features out of each other's way. Names are prefixed
+    campaign_ / backup_ / common_ for the same reason - the merge is flat and a
+    repeated name is a build error.
+-->
+<resources>
+
+    <!-- ============================================================
+         Shared labels (ui/components) - used by more than one screen
+         ============================================================ -->
+
+    <string name="common_save">Save</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_edit">Edit</string>
+    <string name="common_remove">Remove</string>
+    <!-- Content description of the navigate-up button, read out by TalkBack. -->
+    <string name="common_back">Back</string>
+    <!-- Content description of the close button on a status banner. -->
+    <string name="common_dismiss_message">Dismiss message</string>
+    <!-- Provenance line under a campaign or session name. %1$s is a formatted date. -->
+    <string name="common_created_at">Created %1$s</string>
+
+    <!-- ============================================================
+         Campaign list
+         ============================================================ -->
+
+    <string name="campaign_list_title">Campaigns</string>
+    <string name="campaign_name_label">Campaign Name</string>
+    <string name="campaign_description_label">Campaign Description</string>
+    <string name="campaign_add_button">Add Campaign</string>
+    <string name="campaign_open_button">Open</string>
+    <string name="campaign_empty">No campaigns yet</string>
+    <!-- Shown when a search hid every campaign. %1$s is what the user typed. -->
+    <string name="campaign_search_no_results">No campaigns match \"%1$s\"</string>
+    <string name="campaign_search_label">Search campaigns</string>
+    <!-- Content description of the button that empties the search field. -->
+    <string name="campaign_search_clear">Clear search</string>
+
+    <string name="campaign_edit_dialog_title">Edit campaign</string>
+    <string name="campaign_delete_dialog_title">Delete campaign?</string>
+    <!-- %1$s is the campaign name. Spells out the cascade: sessions and events go too. -->
+    <string name="campaign_delete_dialog_text">\"%1$s\" will be deleted together with all of its sessions and every event recorded in them. This cannot be undone.</string>
+
+    <!-- ============================================================
+         Campaign detail
+         ============================================================ -->
+
+    <!-- Top bar title before the campaign has loaded, or if it is gone. -->
+    <string name="campaign_detail_title_fallback">Campaign</string>
+    <string name="campaign_not_found">Campaign not found</string>
+
+    <string name="campaign_participants_heading">Campaign Participants:</string>
+    <string name="campaign_participants_unsaved">Unsaved changes</string>
+    <string name="campaign_participants_empty">No participants yet</string>
+    <string name="campaign_participants_manage">Manage Participants</string>
+    <string name="campaign_participants_save">Save Changes</string>
+
+    <!-- Heading of the participant block on a campaign card. -->
+    <string name="campaign_participants_card_title">Participants</string>
+    <!-- Level and hit points of a participant on a campaign card. -->
+    <string name="campaign_participant_stats">Lvl %1$d | HP: %2$d</string>
+    <!-- One row of the participant editor: %1$s name, %2$d level, %3$d max HP. -->
+    <string name="campaign_participant_summary">%1$s (Lvl %2$d, HP: %3$d)</string>
+
+    <string name="campaign_participant_name_label">Name</string>
+    <string name="campaign_participant_level_label">Lvl</string>
+    <string name="campaign_participant_max_hp_label">HP</string>
+    <string name="campaign_participant_add">Add Participant</string>
+    <string name="campaign_participant_update">Update Participant</string>
+
+    <string name="campaign_session_title_label">Session Title</string>
+    <string name="campaign_session_notes_label">Session Notes</string>
+    <string name="campaign_session_add_button">Add Session</string>
+    <string name="campaign_session_edit_action">Edit session</string>
+    <string name="campaign_session_edit_dialog_title">Edit session</string>
+    <string name="campaign_session_delete_dialog_title">Delete session?</string>
+    <!-- %1$s is the session title. -->
+    <string name="campaign_session_delete_dialog_text">\"%1$s\" will be deleted together with every event recorded in it. This cannot be undone.</string>
+
+    <!-- ============================================================
+         Validation and failures
+         ============================================================ -->
+
+    <string name="campaign_name_required">Campaign name cannot be empty</string>
+    <string name="campaign_session_title_required">Session title cannot be empty</string>
+
+    <string name="campaign_participant_name_required">Participant name cannot be empty</string>
+    <string name="campaign_participant_level_not_a_number">Level must be a whole number</string>
+    <!-- %1$d and %2$d are the accepted bounds. -->
+    <string name="campaign_participant_level_out_of_range">Level must be between %1$d and %2$d</string>
+    <string name="campaign_participant_max_hp_not_a_number">Max HP must be a whole number</string>
+    <string name="campaign_participant_max_hp_out_of_range">Max HP must be between %1$d and %2$d</string>
+
+    <!-- Fallbacks, used only when the failure itself said nothing. -->
+    <string name="campaign_error_load_failed">Failed to load campaigns</string>
+    <string name="campaign_error_load_one_failed">Failed to load campaign</string>
+    <string name="campaign_error_add_failed">Failed to add campaign</string>
+    <string name="campaign_error_update_failed">Failed to update campaign</string>
+    <string name="campaign_error_delete_failed">Failed to delete campaign</string>
+    <string name="campaign_error_sessions_load_failed">Failed to load sessions</string>
+    <string name="campaign_error_session_add_failed">Failed to add session</string>
+    <string name="campaign_error_session_update_failed">Failed to update session</string>
+    <string name="campaign_error_session_delete_failed">Failed to delete session</string>
+    <string name="campaign_error_participants_save_failed">Failed to save participants</string>
+
+    <!-- ============================================================
+         Backup and restore
+         ============================================================ -->
+
+    <!-- Content description of the overflow button holding the backup actions. -->
+    <string name="backup_menu_content_description">Backup and restore</string>
+    <!-- The ellipsis is a promise: both items open a file picker first. -->
+    <string name="backup_export_action">Export backup…</string>
+    <string name="backup_restore_action">Restore from backup…</string>
+
+    <string name="backup_progress_export">Writing the backup file…</string>
+    <string name="backup_progress_restore">Replacing your data from the backup…</string>
+
+    <!-- Export succeeded. %1$d is how many campaigns went into the file. -->
+    <plurals name="backup_export_success">
+        <item quantity="one">Backup saved: %1$d campaign, including every session and event.</item>
+        <item quantity="other">Backup saved: %1$d campaigns, including every session and event.</item>
+    </plurals>
+
+    <!-- %1$s is the reason the file could not be written. -->
+    <string name="backup_export_failed">Could not write the backup file: %1$s.</string>
+
+    <!--
+        Restore succeeded. The counts are repeated per table instead of being
+        summed into one number, because "384 records" does not tell anyone
+        whether their sessions came back. Each count is a plural of its own and
+        the frame places them, so a translation can reorder the whole sentence.
+    -->
+    <string name="backup_restore_success">Restore complete: %1$s - %2$s, %3$s, %4$s, %5$s.</string>
+
+    <plurals name="backup_record_count">
+        <item quantity="one">%1$d record</item>
+        <item quantity="other">%1$d records</item>
+    </plurals>
+
+    <plurals name="backup_campaign_count">
+        <item quantity="one">%1$d campaign</item>
+        <item quantity="other">%1$d campaigns</item>
+    </plurals>
+
+    <plurals name="backup_participant_count">
+        <item quantity="one">%1$d participant</item>
+        <item quantity="other">%1$d participants</item>
+    </plurals>
+
+    <plurals name="backup_session_count">
+        <item quantity="one">%1$d session</item>
+        <item quantity="other">%1$d sessions</item>
+    </plurals>
+
+    <plurals name="backup_event_count">
+        <item quantity="one">%1$d event</item>
+        <item quantity="other">%1$d events</item>
+    </plurals>
+
+    <!--
+        Every failed restore says which side of all-or-nothing it fell on: the
+        sentence about the data being untouched is part of each message rather
+        than a fragment glued on, so a translation can place it freely.
+    -->
+    <!-- %1$s is the reason the file could not be read. -->
+    <string name="backup_restore_read_failed">Could not read the backup file: %1$s. Your data was not changed.</string>
+    <string name="backup_restore_not_a_backup">That file is not a Digital Dungeon backup. Your data was not changed.</string>
+    <!-- %1$d is the format version of the file, %2$d the newest one this app reads. -->
+    <string name="backup_restore_unsupported_version">This backup was written by a newer version of the app (backup format %1$d, this version reads %2$d). Update the app and try again. Your data was not changed.</string>
+
+    <!-- The wall in front of a restore: it replaces everything, it does not merge. -->
+    <string name="backup_restore_warning_title">Replace all data?</string>
+    <string name="backup_restore_warning_text">Restoring does not merge: it replaces everything in the app with the contents of the backup file. Every campaign, session and event you have now - including anything recorded after that backup was taken - will be deleted and cannot be recovered.\n\nYou will pick the backup file next; nothing changes until you do.</string>
+    <!-- Repeats what the tap does, so the last thing read is not "OK". -->
+    <string name="backup_restore_warning_confirm">Replace my data</string>
+
+</resources>

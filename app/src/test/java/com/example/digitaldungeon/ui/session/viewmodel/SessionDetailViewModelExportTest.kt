@@ -1,7 +1,9 @@
 package com.example.digitaldungeon.ui.session.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import com.example.digitaldungeon.domain.export.SessionMarkdownLabels
 import com.example.digitaldungeon.domain.model.SessionEventType
+import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.FakeSessionEventRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
@@ -35,11 +37,13 @@ class SessionDetailViewModelExportTest {
 
     private lateinit var sessionRepository: FakeSessionRepository
     private lateinit var eventRepository: FakeSessionEventRepository
+    private lateinit var campaignRepository: FakeCampaignRepository
 
     @Before
     fun setUp() {
         sessionRepository = FakeSessionRepository()
         eventRepository = FakeSessionEventRepository()
+        campaignRepository = FakeCampaignRepository()
     }
 
     private val stored = listOf(
@@ -70,6 +74,7 @@ class SessionDetailViewModelExportTest {
         SessionDetailViewModel(
             sessionRepository = sessionRepository,
             sessionEventRepository = eventRepository,
+            campaignRepository = campaignRepository,
             savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to SESSION_ID))
         ).also { advanceUntilIdle() }
 
@@ -83,6 +88,7 @@ class SessionDetailViewModelExportTest {
             val viewModel = SessionDetailViewModel(
                 sessionRepository = sessionRepository,
                 sessionEventRepository = eventRepository,
+            campaignRepository = campaignRepository,
                 savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to SESSION_ID))
             )
 
@@ -245,6 +251,35 @@ class SessionDetailViewModelExportTest {
             advanceUntilIdle()
 
             assertTrue(viewModel.buildSessionMarkdown()!!.contains("A Hidden Door"))
+        }
+
+    // --------------------------------------------------------------- wording
+
+    /**
+     * The screen resolves the wording from string resources and passes it in, so the
+     * log comes out in the language of the app without a `Context` reaching the
+     * ViewModel. The default is the English wording, which is what lets this suite
+     * call the method without resources at all.
+     */
+    @Test
+    fun buildSessionMarkdown_withGivenLabels_usesTheirWording() =
+        runTest(mainDispatcherRule.testDispatcher) {
+
+            sessionRepository.session.value =
+                session(id = SESSION_ID, title = "The Long Night", notes = "")
+
+            val viewModel = createViewModel()
+
+            val markdown = viewModel.buildSessionMarkdown(
+                labels = SessionMarkdownLabels(
+                    timelineHeading = "Хронология",
+                    emptyTimeline = "_Событий нет._"
+                )
+            )!!
+
+            assertTrue(markdown.contains("## Хронология"))
+            assertTrue(markdown.contains("_Событий нет._"))
+            assertFalse(markdown.contains("## Timeline"))
         }
 
     private companion object {

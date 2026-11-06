@@ -11,8 +11,10 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.SessionEventType
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
@@ -37,7 +39,7 @@ fun EventTypeFilterRow(
         FilterChip(
             selected = selectedType == null,
             onClick = { onTypeSelected(null) },
-            label = { Text("All") }
+            label = { Text(stringResource(R.string.event_type_filter_all)) }
         )
 
         SessionEventType.entries.forEach { type ->
@@ -46,7 +48,7 @@ fun EventTypeFilterRow(
                 selected = isSelected,
                 // Tapping the active chip is the shortest way back to "All"
                 onClick = { onTypeSelected(if (isSelected) null else type) },
-                label = { Text(type.name) }
+                label = { Text(type.label()) }
             )
         }
     }

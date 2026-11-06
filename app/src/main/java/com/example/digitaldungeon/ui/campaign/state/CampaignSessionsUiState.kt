@@ -1,6 +1,7 @@
 package com.example.digitaldungeon.ui.campaign.state
 
 import com.example.digitaldungeon.domain.model.Session
+import com.example.digitaldungeon.ui.text.UiText
 
 /**
  * State of the session block of the campaign detail screen: the list of the
@@ -14,7 +15,8 @@ data class CampaignSessionsUiState(
     val sessionTitle: String = "",
     val sessionNotes: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null,
+    /** Formatted when drawn, so it follows a language change. See [UiText]. */
+    val error: UiText? = null,
     /**
      * Non-null while the delete confirmation dialog is open. Lives in the state
      * instead of a `remember` so the question survives a configuration change.
@@ -32,5 +34,5 @@ data class CampaignSessionsUiState(
      * Why the edit dialog refused to save. Separate from [error] because the
      * dialog covers the screen: a message behind it would never be read.
      */
-    val editError: String? = null
+    val editError: UiText? = null
 )

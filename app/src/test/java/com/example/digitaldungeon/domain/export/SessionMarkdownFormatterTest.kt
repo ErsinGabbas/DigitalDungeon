@@ -508,4 +508,104 @@ class SessionMarkdownFormatterTest {
 
         assertTrue(blocksOf(markdown).none { it.isBlank() })
     }
+
+    // ----------------------------------------------------------------- wording
+    //
+    // The document is read by a person, so its headings belong in the app's
+    // language - which the formatter must not resolve itself. It takes the already
+    // resolved wording instead, and the English defaults above are what keeps the
+    // rest of this suite free of resources.
+
+    @Test
+    fun labels_decideTheFixedHeadingsOfTheDocument() {
+
+        val markdown = formatSessionAsMarkdown(
+            session = session(title = "   ", notes = ""),
+            events = emptyList(),
+            labels = SessionMarkdownLabels(
+                untitledSession = "Сессия без названия",
+                timelineHeading = "Хронология",
+                emptyTimeline = "_Событий нет._"
+            )
+        )
+
+        assertEquals(
+            listOf("# Сессия без названия", "## Хронология", "_Событий нет._"),
+            blocksOf(markdown)
+        )
+    }
+
+    @Test
+    fun labels_decideHowEachEventTypeIsSpelledOut() {
+
+        val markdown = formatSessionAsMarkdown(
+            session = session(title = "The Long Night"),
+            events = listOf(
+                sessionEvent(id = 1, type = SessionEventType.COMBAT, title = "Ambush", orderIndex = 0)
+            ),
+            labels = SessionMarkdownLabels(
+                eventTypeNames = mapOf(SessionEventType.COMBAT to "Combat")
+            )
+        )
+
+        assertEquals(listOf("### 1. Combat — Ambush"), headingsOf(markdown))
+    }
+
+    /** An incomplete map has to degrade to the enum constant, not crash the export. */
+    @Test
+    fun labels_withNoNameForAType_fallBackToTheEnumConstant() {
+
+        val markdown = formatSessionAsMarkdown(
+            session = session(title = "The Long Night"),
+            events = listOf(
+                sessionEvent(id = 1, type = SessionEventType.SCENE, title = "The Tavern", orderIndex = 0)
+            ),
+            labels = SessionMarkdownLabels(
+                eventTypeNames = mapOf(SessionEventType.COMBAT to "Combat")
+            )
+        )
+
+        assertEquals(listOf("### 1. SCENE — The Tavern"), headingsOf(markdown))
+    }
+
+    @Test
+    fun labels_decideTheLabelAboveTheParticipantList() {
+
+        val markdown = formatSessionAsMarkdown(
+            session = session(title = "The Long Night", notes = ""),
+            events = listOf(
+                sessionEvent(
+                    id = 1,
+                    orderIndex = 0,
+                    participants = listOf(participant(name = "Rogar", level = 4, maxHp = 38))
+                )
+            ),
+            labels = SessionMarkdownLabels(participantsLabel = "Участники")
+        )
+
+        val blocks = blocksOf(markdown)
+        assertEquals("Участники:", blocks[blocks.size - 2])
+    }
+
+    /**
+     * The bullet is one format string and not three fragments, because where the
+     * numbers go in it is a property of the language.
+     */
+    @Test
+    fun labels_decideTheOrderOfThePartsOfAParticipantBullet() {
+
+        val markdown = formatSessionAsMarkdown(
+            session = session(title = "The Long Night"),
+            events = listOf(
+                sessionEvent(
+                    id = 1,
+                    orderIndex = 0,
+                    participants = listOf(participant(name = "Rogar", level = 4, maxHp = 38))
+                )
+            ),
+            labels = SessionMarkdownLabels(participantLine = "%2\$d ур., %3\$d ХП — %1\$s")
+        )
+
+        assertEquals("- 4 ур., 38 ХП — Rogar", blocksOf(markdown).last())
+    }
 }

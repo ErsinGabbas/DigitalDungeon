@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Session UI strings.
+
+    Kept apart from strings.xml on purpose: Android merges every file in res/values,
+    so the session and campaign parts of the app can grow their own catalogues without
+    two authors editing one file. Every name here is prefixed session_ / event_ to keep
+    the merged namespace unambiguous.
+-->
+<resources>
+
+    <!-- ============================ Session detail screen ============================ -->
+
+    <!-- Shown in the top bar until the session itself has loaded -->
+    <string name="session_detail_title_fallback">Session</string>
+    <string name="session_action_back">Back</string>
+    <!-- Says "full" on purpose: the export ignores the timeline filter -->
+    <string name="session_action_share_full_log">Share full session log</string>
+    <string name="session_share_chooser_title">Share session log</string>
+
+    <string name="session_timeline_heading">Timeline</string>
+    <string name="session_quick_note_heading">Quick Note</string>
+    <string name="session_quick_note_placeholder">Quick note...</string>
+    <string name="session_action_add">Add</string>
+
+    <string name="session_search_placeholder">Search events...</string>
+    <string name="session_action_clear_search">Clear search</string>
+    <string name="session_action_clear_filters">Clear filters</string>
+
+    <!--
+        One line that explains both surprises of a filtered timeline. A single format
+        resource rather than concatenated fragments, because the word order differs per
+        language. %1$d is how many events are visible, %2$d how many exist in total; the
+        grammatical number follows the total.
+    -->
+    <plurals name="session_filter_status">
+        <item quantity="one">Showing %1$d of %2$d event. Reordering is off while filtering; sharing still exports the full log.</item>
+        <item quantity="other">Showing %1$d of %2$d events. Reordering is off while filtering; sharing still exports the full log.</item>
+    </plurals>
+
+    <string name="session_timeline_empty_title">No events yet</string>
+    <string name="session_timeline_empty_message">Pick a type above and add your first note.</string>
+    <string name="session_timeline_no_matches_title">No events match the filter</string>
+    <string name="session_timeline_no_matches_message">Your events are still here — try another search or type.</string>
+
+    <!-- Fallback when a failure carries no message of its own -->
+    <string name="session_error_unknown">Something went wrong. Please try again.</string>
+
+    <!-- ============================== Shared actions ============================== -->
+
+    <string name="session_action_save">Save</string>
+    <string name="session_action_cancel">Cancel</string>
+    <string name="session_action_edit">Edit</string>
+    <string name="session_action_delete">Delete</string>
+
+    <!-- ============================= Event edit dialog ============================= -->
+
+    <string name="event_edit_title">Edit event</string>
+    <string name="event_field_title_label">Title</string>
+    <string name="event_field_type_label">Event Type</string>
+    <string name="event_field_content_label">Content</string>
+
+    <!-- ========================== Delete confirmation ========================== -->
+
+    <string name="event_delete_title">Delete event?</string>
+    <string name="event_delete_message">This cannot be undone.</string>
+    <!-- Stands in for the summary of an event with neither title nor content -->
+    <string name="event_delete_empty_summary">(empty event)</string>
+
+    <!-- ================================ Event card ================================ -->
+
+    <string name="event_action_move_up">Move event up</string>
+    <string name="event_action_move_down">Move event down</string>
+
+    <!--
+        A disabled arrow says why in its own label. A screen reader announces the
+        button as dimmed but cannot see what dims it, and "move event up" on a
+        control that will not move anything is worse than saying nothing.
+        Position and filtering are two different reasons and get two wordings.
+    -->
+    <string name="event_action_move_up_first">Move event up, unavailable: already the first event</string>
+    <string name="event_action_move_down_last">Move event down, unavailable: already the last event</string>
+    <string name="event_action_move_up_filtered">Move event up, unavailable while the timeline is filtered</string>
+    <string name="event_action_move_down_filtered">Move event down, unavailable while the timeline is filtered</string>
+
+    <!-- Shown on the card when a disabled arrow is long pressed -->
+    <string name="event_reorder_blocked_first">This is already the first event in the timeline.</string>
+    <string name="event_reorder_blocked_last">This is already the last event in the timeline.</string>
+    <string name="event_reorder_blocked_by_filter">Reordering is off while the timeline is filtered: the event above on screen is not the event above in the saved order. Clear the search and the type filter to change the order.</string>
+
+    <string name="event_participants_heading">Participants:</string>
+    <!-- %1$s name, %2$d level, %3$d max HP -->
+    <string name="event_participant_line">%1$s (Lvl %2$d, HP: %3$d)</string>
+
+    <!-- ========================== Participant picker ========================== -->
+
+    <string name="event_participants_label">Participants</string>
+    <!-- Preview only: the edit dialog variant, where the list is the event's own cast -->
+    <string name="event_participants_label_snapshot">Participants (event snapshot)</string>
+
+    <!-- ================================ Event types ================================ -->
+    <!--
+        The enum constants (SCENE, COMBAT, …) are storage, not labels: they are written to
+        the database and appear verbatim in SQL migrations. These strings are the only
+        thing the user sees, mapped in eventTypeLabelRes().
+    -->
+
+    <string name="event_type_filter_all">All</string>
+    <string name="event_type_scene">Scene</string>
+    <string name="event_type_combat">Combat</string>
+    <string name="event_type_dialogue">Dialogue</string>
+    <string name="event_type_discovery">Discovery</string>
+    <string name="event_type_note">Note</string>
+
+    <!-- ============================= Markdown export ============================= -->
+    <!--
+        The exported log is a document the user hands to someone else, so it is written in
+        the same language as the app. These are read on the screen and handed to the pure
+        formatter as SessionMarkdownLabels - it never touches resources itself.
+    -->
+
+    <string name="session_export_untitled_session">Untitled session</string>
+    <string name="session_export_timeline_heading">Timeline</string>
+    <string name="session_export_empty_timeline">_No events recorded._</string>
+    <string name="session_export_participants_label">Participants</string>
+    <!-- %1$s name, %2$d level, %3$d max HP -->
+    <string name="session_export_participant_line">%1$s (Lvl %2$d, HP %3$d)</string>
+
+</resources>

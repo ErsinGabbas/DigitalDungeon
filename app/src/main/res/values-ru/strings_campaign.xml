@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Русский перевод интерфейса кампаний.
+
+    Терминология: campaign - кампания, session - сессия, participant -
+    участник, backup - резервная копия. Предупреждение перед восстановлением
+    переведено так же однозначно, как в оригинале: операция заменяет все данные
+    целиком и отменить её нельзя.
+-->
+<resources>
+
+    <!-- ============================================================
+         Общие подписи (ui/components)
+         ============================================================ -->
+
+    <string name="common_save">Сохранить</string>
+    <string name="common_cancel">Отмена</string>
+    <string name="common_delete">Удалить</string>
+    <string name="common_edit">Изменить</string>
+    <string name="common_remove">Убрать</string>
+    <string name="common_back">Назад</string>
+    <string name="common_dismiss_message">Закрыть сообщение</string>
+    <string name="common_created_at">Создано %1$s</string>
+
+    <!-- ============================================================
+         Список кампаний
+         ============================================================ -->
+
+    <string name="campaign_list_title">Кампании</string>
+    <string name="campaign_name_label">Название кампании</string>
+    <string name="campaign_description_label">Описание кампании</string>
+    <string name="campaign_add_button">Добавить кампанию</string>
+    <string name="campaign_open_button">Открыть</string>
+    <string name="campaign_empty">Кампаний пока нет</string>
+    <string name="campaign_search_no_results">Нет кампаний по запросу «%1$s»</string>
+    <string name="campaign_search_label">Поиск кампаний</string>
+    <string name="campaign_search_clear">Очистить поиск</string>
+
+    <string name="campaign_edit_dialog_title">Изменить кампанию</string>
+    <string name="campaign_delete_dialog_title">Удалить кампанию?</string>
+    <string name="campaign_delete_dialog_text">Кампания «%1$s» будет удалена вместе со всеми её сессиями и всеми записанными в них событиями. Отменить это будет нельзя.</string>
+
+    <!-- ============================================================
+         Экран кампании
+         ============================================================ -->
+
+    <string name="campaign_detail_title_fallback">Кампания</string>
+    <string name="campaign_not_found">Кампания не найдена</string>
+
+    <string name="campaign_participants_heading">Участники кампании:</string>
+    <string name="campaign_participants_unsaved">Есть несохранённые изменения</string>
+    <string name="campaign_participants_empty">Участников пока нет</string>
+    <string name="campaign_participants_manage">Управление участниками</string>
+    <string name="campaign_participants_save">Сохранить изменения</string>
+
+    <string name="campaign_participants_card_title">Участники</string>
+    <string name="campaign_participant_stats">Ур. %1$d | HP: %2$d</string>
+    <string name="campaign_participant_summary">%1$s (ур. %2$d, HP: %3$d)</string>
+
+    <string name="campaign_participant_name_label">Имя</string>
+    <string name="campaign_participant_level_label">Ур.</string>
+    <string name="campaign_participant_max_hp_label">HP</string>
+    <string name="campaign_participant_add">Добавить участника</string>
+    <string name="campaign_participant_update">Сохранить участника</string>
+
+    <string name="campaign_session_title_label">Название сессии</string>
+    <string name="campaign_session_notes_label">Заметки к сессии</string>
+    <string name="campaign_session_add_button">Добавить сессию</string>
+    <string name="campaign_session_edit_action">Изменить сессию</string>
+    <string name="campaign_session_edit_dialog_title">Изменить сессию</string>
+    <string name="campaign_session_delete_dialog_title">Удалить сессию?</string>
+    <string name="campaign_session_delete_dialog_text">Сессия «%1$s» будет удалена вместе со всеми записанными в ней событиями. Отменить это будет нельзя.</string>
+
+    <!-- ============================================================
+         Проверка ввода и ошибки
+         ============================================================ -->
+
+    <string name="campaign_name_required">Название кампании не может быть пустым</string>
+    <string name="campaign_session_title_required">Название сессии не может быть пустым</string>
+
+    <string name="campaign_participant_name_required">Имя участника не может быть пустым</string>
+    <string name="campaign_participant_level_not_a_number">Уровень должен быть целым числом</string>
+    <string name="campaign_participant_level_out_of_range">Уровень должен быть от %1$d до %2$d</string>
+    <string name="campaign_participant_max_hp_not_a_number">Максимум HP должен быть целым числом</string>
+    <string name="campaign_participant_max_hp_out_of_range">Максимум HP должен быть от %1$d до %2$d</string>
+
+    <string name="campaign_error_load_failed">Не удалось загрузить кампании</string>
+    <string name="campaign_error_load_one_failed">Не удалось загрузить кампанию</string>
+    <string name="campaign_error_add_failed">Не удалось добавить кампанию</string>
+    <string name="campaign_error_update_failed">Не удалось сохранить кампанию</string>
+    <string name="campaign_error_delete_failed">Не удалось удалить кампанию</string>
+    <string name="campaign_error_sessions_load_failed">Не удалось загрузить сессии</string>
+    <string name="campaign_error_session_add_failed">Не удалось добавить сессию</string>
+    <string name="campaign_error_session_update_failed">Не удалось сохранить сессию</string>
+    <string name="campaign_error_session_delete_failed">Не удалось удалить сессию</string>
+    <string name="campaign_error_participants_save_failed">Не удалось сохранить участников</string>
+
+    <!-- ============================================================
+         Резервные копии
+         ============================================================ -->
+
+    <string name="backup_menu_content_description">Резервные копии</string>
+    <string name="backup_export_action">Сохранить резервную копию…</string>
+    <string name="backup_restore_action">Восстановить из резервной копии…</string>
+
+    <string name="backup_progress_export">Сохраняем резервную копию…</string>
+    <string name="backup_progress_restore">Заменяем данные из резервной копии…</string>
+
+    <plurals name="backup_export_success">
+        <item quantity="one">Резервная копия сохранена: %1$d кампания со всеми сессиями и событиями.</item>
+        <item quantity="few">Резервная копия сохранена: %1$d кампании со всеми сессиями и событиями.</item>
+        <item quantity="many">Резервная копия сохранена: %1$d кампаний со всеми сессиями и событиями.</item>
+        <item quantity="other">Резервная копия сохранена: %1$d кампании со всеми сессиями и событиями.</item>
+    </plurals>
+
+    <string name="backup_export_failed">Не удалось записать файл резервной копии: %1$s.</string>
+
+    <string name="backup_restore_success">Восстановление завершено: %1$s — %2$s, %3$s, %4$s, %5$s.</string>
+
+    <plurals name="backup_record_count">
+        <item quantity="one">%1$d запись</item>
+        <item quantity="few">%1$d записи</item>
+        <item quantity="many">%1$d записей</item>
+        <item quantity="other">%1$d записи</item>
+    </plurals>
+
+    <plurals name="backup_campaign_count">
+        <item quantity="one">%1$d кампания</item>
+        <item quantity="few">%1$d кампании</item>
+        <item quantity="many">%1$d кампаний</item>
+        <item quantity="other">%1$d кампании</item>
+    </plurals>
+
+    <plurals name="backup_participant_count">
+        <item quantity="one">%1$d участник</item>
+        <item quantity="few">%1$d участника</item>
+        <item quantity="many">%1$d участников</item>
+        <item quantity="other">%1$d участника</item>
+    </plurals>
+
+    <plurals name="backup_session_count">
+        <item quantity="one">%1$d сессия</item>
+        <item quantity="few">%1$d сессии</item>
+        <item quantity="many">%1$d сессий</item>
+        <item quantity="other">%1$d сессии</item>
+    </plurals>
+
+    <plurals name="backup_event_count">
+        <item quantity="one">%1$d событие</item>
+        <item quantity="few">%1$d события</item>
+        <item quantity="many">%1$d событий</item>
+        <item quantity="other">%1$d события</item>
+    </plurals>
+
+    <string name="backup_restore_read_failed">Не удалось прочитать файл резервной копии: %1$s. Ваши данные не изменились.</string>
+    <string name="backup_restore_not_a_backup">Это не резервная копия Digital Dungeon. Ваши данные не изменились.</string>
+    <string name="backup_restore_unsupported_version">Эта резервная копия создана более новой версией приложения (формат копии %1$d, эта версия читает %2$d). Обновите приложение и попробуйте снова. Ваши данные не изменились.</string>
+
+    <string name="backup_restore_warning_title">Заменить все данные?</string>
+    <string name="backup_restore_warning_text">Восстановление не объединяет данные: оно полностью заменяет всё в приложении содержимым файла резервной копии. Все кампании, сессии и события, которые есть сейчас, — включая всё записанное после создания этой копии, — будут удалены безвозвратно.\n\nДальше вы выберете файл копии; до этого ничего не изменится.</string>
+    <string name="backup_restore_warning_confirm">Заменить мои данные</string>
+
+</resources>

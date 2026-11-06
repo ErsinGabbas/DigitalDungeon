@@ -12,9 +12,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 /**
@@ -33,12 +35,12 @@ fun EmptyTimelineState(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "No events yet",
+                text = stringResource(R.string.session_timeline_empty_title),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Pick a type above and add your first note.",
+                text = stringResource(R.string.session_timeline_empty_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
@@ -66,18 +68,18 @@ fun NoMatchingEventsState(
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(
-                text = "No events match the filter",
+                text = stringResource(R.string.session_timeline_no_matches_title),
                 style = MaterialTheme.typography.bodyLarge,
                 textAlign = TextAlign.Center
             )
             Text(
-                text = "Your events are still here — try another search or type.",
+                text = stringResource(R.string.session_timeline_no_matches_message),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
             TextButton(onClick = onClearFilters) {
-                Text("Clear filters")
+                Text(stringResource(R.string.session_action_clear_filters))
             }
         }
     }

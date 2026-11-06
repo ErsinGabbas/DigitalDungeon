@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Signing material must never be committed - losing it is bad, leaking it is worse
+*.jks
+*.keystore

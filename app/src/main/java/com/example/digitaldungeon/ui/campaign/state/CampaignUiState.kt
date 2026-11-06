@@ -1,13 +1,19 @@
 package com.example.digitaldungeon.ui.campaign.state
 
 import com.example.digitaldungeon.domain.model.Campaign
+import com.example.digitaldungeon.ui.text.UiText
 
 data class CampaignUiState(
     val campaigns: List<Campaign> = emptyList(),
     val campaignName: String = "",
     val campaignDescription: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null,
+    /**
+     * Why the last operation failed. A [UiText] rather than a [String]: the
+     * message is formatted when it is drawn, so it is in the language the user
+     * is reading in and not in the one that was current when it was produced.
+     */
+    val error: UiText? = null,
     /**
      * Non-null while the delete confirmation dialog is open. Lives in the state
      * instead of a `remember` so the question survives a configuration change.
@@ -25,9 +31,25 @@ data class CampaignUiState(
      * Why the edit dialog refused to save. Separate from [error] because the
      * dialog covers the screen: a message behind it would never be read.
      */
-    val editError: String? = null,
+    val editError: UiText? = null,
     /** What the user typed into the search field, "" while not searching. */
-    val searchQuery: String = ""
+    val searchQuery: String = "",
+    /**
+     * The export or restore in flight, `null` while the screen is idle. Drives
+     * both the progress indicator and the "one at a time" guard.
+     */
+    val backupOperation: BackupOperation? = null,
+    /**
+     * True while the restore warning is on screen. The warning comes *before* the
+     * file picker: picking a file and only then being told that everything is
+     * about to be overwritten is the wrong order to learn that in.
+     */
+    val isRestoreWarningVisible: Boolean = false,
+    /**
+     * How the last export or restore ended. Shown as a banner rather than in
+     * [error], which is a thin line of red text the campaign list scrolls over.
+     */
+    val backupMessage: BackupMessage? = null
 ) {
 
     /**
@@ -63,4 +85,16 @@ data class CampaignUiState(
      */
     val hasNoSearchResults: Boolean
         get() = campaigns.isNotEmpty() && filteredCampaigns.isEmpty()
+
+    /** An export or a restore is running right now. */
+    val isBackupRunning: Boolean
+        get() = backupOperation != null
+
+    /**
+     * Whether the backup menu accepts a click. False while an operation runs:
+     * starting a restore on top of an export would race two whole-database
+     * operations against each other.
+     */
+    val isBackupMenuEnabled: Boolean
+        get() = !isBackupRunning
 }

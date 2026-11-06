@@ -1,11 +1,13 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.campaign
 import com.example.digitaldungeon.testing.session
+import com.example.digitaldungeon.ui.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -109,7 +111,10 @@ class CampaignDetailViewModelTest {
 
             val viewModel = createViewModel()
 
-            assertEquals("Campaign not found", viewModel.campaignUiState.value.error)
+            assertEquals(
+                UiText.of(R.string.campaign_not_found),
+                viewModel.campaignUiState.value.error
+            )
             assertFalse(viewModel.campaignUiState.value.isLoading)
         }
 
@@ -118,7 +123,10 @@ class CampaignDetailViewModelTest {
         runTest(mainDispatcherRule.testDispatcher) {
 
             val viewModel = createViewModel()
-            assertEquals("Campaign not found", viewModel.campaignUiState.value.error)
+            assertEquals(
+                UiText.of(R.string.campaign_not_found),
+                viewModel.campaignUiState.value.error
+            )
 
             campaignRepository.campaignById.value = campaign(id = CAMPAIGN_ID)
             advanceUntilIdle()
@@ -134,7 +142,7 @@ class CampaignDetailViewModelTest {
 
             val viewModel = createViewModel()
 
-            assertEquals("campaign query failed", viewModel.campaignUiState.value.error)
+            assertEquals(UiText.Raw("campaign query failed"), viewModel.campaignUiState.value.error)
             assertFalse(viewModel.campaignUiState.value.isLoading)
         }
 
@@ -146,7 +154,7 @@ class CampaignDetailViewModelTest {
 
             val viewModel = createViewModel()
 
-            assertEquals("session query failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("session query failed"), viewModel.sessionUiState.value.error)
             assertFalse(viewModel.sessionUiState.value.isLoading)
         }
 
@@ -161,7 +169,7 @@ class CampaignDetailViewModelTest {
 
             val viewModel = createViewModel()
 
-            assertEquals("session query failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("session query failed"), viewModel.sessionUiState.value.error)
             assertNull(viewModel.campaignUiState.value.error)
             assertNull(viewModel.participantsUiState.value.error)
         }
@@ -175,7 +183,7 @@ class CampaignDetailViewModelTest {
 
             val viewModel = createViewModel()
 
-            assertEquals("campaign query failed", viewModel.campaignUiState.value.error)
+            assertEquals(UiText.Raw("campaign query failed"), viewModel.campaignUiState.value.error)
             assertNull(viewModel.sessionUiState.value.error)
             assertEquals(1, viewModel.sessionUiState.value.sessions.size)
         }
@@ -193,12 +201,12 @@ class CampaignDetailViewModelTest {
             val viewModel = createViewModel()
             viewModel.saveParticipants()
             advanceUntilIdle()
-            assertEquals("save failed", viewModel.participantsUiState.value.error)
+            assertEquals(UiText.Raw("save failed"), viewModel.participantsUiState.value.error)
 
             sessionRepository.sessions.value = listOf(session(id = 5, campaignId = CAMPAIGN_ID))
             advanceUntilIdle()
 
-            assertEquals("save failed", viewModel.participantsUiState.value.error)
+            assertEquals(UiText.Raw("save failed"), viewModel.participantsUiState.value.error)
         }
 
     @Test
@@ -214,7 +222,7 @@ class CampaignDetailViewModelTest {
             campaignRepository.campaignById.value = campaign(id = CAMPAIGN_ID, name = "renamed")
             advanceUntilIdle()
 
-            assertEquals("save failed", viewModel.participantsUiState.value.error)
+            assertEquals(UiText.Raw("save failed"), viewModel.participantsUiState.value.error)
         }
 
     @Test
@@ -228,7 +236,7 @@ class CampaignDetailViewModelTest {
             viewModel.saveParticipants()
             advanceUntilIdle()
 
-            assertEquals("save failed", viewModel.participantsUiState.value.error)
+            assertEquals(UiText.Raw("save failed"), viewModel.participantsUiState.value.error)
             assertNull(viewModel.sessionUiState.value.error)
             assertNull(viewModel.campaignUiState.value.error)
         }
@@ -240,12 +248,12 @@ class CampaignDetailViewModelTest {
             sessionRepository.getSessionsForCampaignError = IllegalStateException("session query failed")
 
             val viewModel = createViewModel()
-            assertEquals("session query failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("session query failed"), viewModel.sessionUiState.value.error)
 
             viewModel.saveParticipants()
             advanceUntilIdle()
 
-            assertEquals("session query failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("session query failed"), viewModel.sessionUiState.value.error)
             assertNull(viewModel.participantsUiState.value.error)
         }
 
@@ -259,12 +267,12 @@ class CampaignDetailViewModelTest {
             viewModel.onSessionTitleChange("Session 1")
             viewModel.addSession()
             advanceUntilIdle()
-            assertEquals("add session failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("add session failed"), viewModel.sessionUiState.value.error)
 
             campaignRepository.campaignById.value = campaign(id = CAMPAIGN_ID, name = "renamed")
             advanceUntilIdle()
 
-            assertEquals("add session failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("add session failed"), viewModel.sessionUiState.value.error)
             assertTrue(viewModel.campaignUiState.value.error == null)
         }
 

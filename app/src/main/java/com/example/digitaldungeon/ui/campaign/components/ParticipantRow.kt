@@ -10,8 +10,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
@@ -32,7 +34,12 @@ fun ParticipantRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "${participant.name} (Lvl ${participant.level}, HP: ${participant.maxHp})",
+            text = stringResource(
+                R.string.campaign_participant_summary,
+                participant.name,
+                participant.level,
+                participant.maxHp
+            ),
             style = MaterialTheme.typography.bodySmall
         )
         Row(
@@ -42,13 +49,13 @@ fun ParticipantRow(
                 onClick = onEdit,
                 modifier = Modifier.padding(horizontal = 4.dp)
             ) {
-                Text("Edit")
+                Text(stringResource(R.string.common_edit))
             }
             Button(
                 onClick = onRemove,
                 modifier = Modifier.padding(horizontal = 4.dp)
             ) {
-                Text("Remove")
+                Text(stringResource(R.string.common_remove))
             }
         }
     }

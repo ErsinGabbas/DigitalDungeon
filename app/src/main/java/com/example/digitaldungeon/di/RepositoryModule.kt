@@ -1,5 +1,7 @@
 package com.example.digitaldungeon.di
 
+import com.example.digitaldungeon.data.backup.BackupService
+import com.example.digitaldungeon.data.backup.BackupServiceImpl
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.CampaignRepositoryImpl
 import com.example.digitaldungeon.data.repository.SessionEventRepository
@@ -27,4 +29,8 @@ abstract class RepositoryModule {
     @Binds
     @Singleton
     abstract fun bindSessionEventRepository(impl: SessionEventRepositoryImpl): SessionEventRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindBackupService(impl: BackupServiceImpl): BackupService
 }

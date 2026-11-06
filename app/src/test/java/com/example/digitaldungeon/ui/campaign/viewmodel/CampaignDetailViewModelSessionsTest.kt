@@ -1,11 +1,13 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.session
 import com.example.digitaldungeon.ui.campaign.state.PendingSessionDeletion
+import com.example.digitaldungeon.ui.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -74,7 +76,7 @@ class CampaignDetailViewModelSessionsTest {
             advanceUntilIdle()
 
             assertEquals(
-                "Session title cannot be empty",
+                UiText.of(R.string.campaign_session_title_required),
                 viewModel.sessionUiState.value.error
             )
             assertTrue(sessionRepository.addSessionCalls.isEmpty())
@@ -132,7 +134,7 @@ class CampaignDetailViewModelSessionsTest {
             advanceUntilIdle()
 
             val state = viewModel.sessionUiState.value
-            assertEquals("insert failed", state.error)
+            assertEquals(UiText.Raw("insert failed"), state.error)
             assertFalse(state.isLoading)
             assertEquals("The Inn Burns Down", state.sessionTitle)
         }
@@ -211,7 +213,7 @@ class CampaignDetailViewModelSessionsTest {
             viewModel.confirmDeleteSession()
             advanceUntilIdle()
 
-            assertEquals("delete failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("delete failed"), viewModel.sessionUiState.value.error)
             assertFalse(viewModel.sessionUiState.value.isLoading)
         }
 

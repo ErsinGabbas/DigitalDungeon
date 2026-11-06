@@ -1,9 +1,12 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
+import com.example.digitaldungeon.R
+import com.example.digitaldungeon.testing.FakeBackupService
 import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.campaign
 import com.example.digitaldungeon.ui.campaign.state.PendingCampaignDeletion
+import com.example.digitaldungeon.ui.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -23,15 +26,17 @@ class CampaignViewModelTest {
     val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var repository: FakeCampaignRepository
+    private lateinit var backupService: FakeBackupService
 
     @Before
     fun setUp() {
         repository = FakeCampaignRepository()
+        backupService = FakeBackupService()
     }
 
     /** Creates the ViewModel and lets its `init` subscription settle. */
     private fun TestScope.createViewModel(): CampaignViewModel =
-        CampaignViewModel(repository).also { advanceUntilIdle() }
+        CampaignViewModel(repository, backupService).also { advanceUntilIdle() }
 
     // ---------------------------------------------------------------- loading
 
@@ -71,8 +76,27 @@ class CampaignViewModelTest {
 
             val viewModel = createViewModel()
 
-            assertEquals("database is on fire", viewModel.uiState.value.error)
+            // The text of an exception is not translatable, so it travels as-is.
+            assertEquals(UiText.Raw("database is on fire"), viewModel.uiState.value.error)
             assertFalse(viewModel.uiState.value.isLoading)
+        }
+
+    /**
+     * A messageless exception used to produce "null" on screen; it now falls back to a
+     * sentence of our own, which is the only one of the two that can be localized.
+     */
+    @Test
+    fun getCampaigns_whenFlowThrowsWithoutAMessage_fallsBackToALocalizedError() =
+        runTest(mainDispatcherRule.testDispatcher) {
+
+            repository.getCampaignsError = IllegalStateException()
+
+            val viewModel = createViewModel()
+
+            assertEquals(
+                UiText.of(R.string.campaign_error_load_failed),
+                viewModel.uiState.value.error
+            )
         }
 
     // ------------------------------------------------------------ add campaign
@@ -106,7 +130,7 @@ class CampaignViewModelTest {
             advanceUntilIdle()
 
             assertEquals(
-                CampaignViewModel.CAMPAIGN_NAME_REQUIRED,
+                UiText.of(R.string.campaign_name_required),
                 viewModel.uiState.value.error
             )
         }
@@ -193,7 +217,7 @@ class CampaignViewModelTest {
             viewModel.addCampaign()
             advanceUntilIdle()
 
-            assertEquals("insert failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("insert failed"), viewModel.uiState.value.error)
             assertFalse(viewModel.uiState.value.isLoading)
         }
 
@@ -302,7 +326,7 @@ class CampaignViewModelTest {
             viewModel.confirmDeleteCampaign()
             advanceUntilIdle()
 
-            assertEquals("delete failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("delete failed"), viewModel.uiState.value.error)
             assertFalse(viewModel.uiState.value.isLoading)
         }
 }

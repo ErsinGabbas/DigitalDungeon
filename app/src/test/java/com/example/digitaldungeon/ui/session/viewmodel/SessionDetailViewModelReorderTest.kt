@@ -3,10 +3,12 @@ package com.example.digitaldungeon.ui.session.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import com.example.digitaldungeon.data.repository.SessionEventRepository.MoveDirection
 import com.example.digitaldungeon.domain.model.SessionEventType
+import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.FakeSessionEventRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.sessionEvent
+import com.example.digitaldungeon.ui.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -35,11 +37,13 @@ class SessionDetailViewModelReorderTest {
 
     private lateinit var sessionRepository: FakeSessionRepository
     private lateinit var eventRepository: FakeSessionEventRepository
+    private lateinit var campaignRepository: FakeCampaignRepository
 
     @Before
     fun setUp() {
         sessionRepository = FakeSessionRepository()
         eventRepository = FakeSessionEventRepository()
+        campaignRepository = FakeCampaignRepository()
     }
 
     private val first = sessionEvent(
@@ -73,6 +77,7 @@ class SessionDetailViewModelReorderTest {
         return SessionDetailViewModel(
             sessionRepository = sessionRepository,
             sessionEventRepository = eventRepository,
+            campaignRepository = campaignRepository,
             savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to SESSION_ID))
         ).also { advanceUntilIdle() }
     }
@@ -198,6 +203,7 @@ class SessionDetailViewModelReorderTest {
             val viewModel = SessionDetailViewModel(
                 sessionRepository = sessionRepository,
                 sessionEventRepository = eventRepository,
+            campaignRepository = campaignRepository,
                 savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to SESSION_ID))
             ).also { advanceUntilIdle() }
 
@@ -378,7 +384,7 @@ class SessionDetailViewModelReorderTest {
             viewModel.onMoveEventUp(middle)
             advanceUntilIdle()
 
-            assertEquals("reorder failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("reorder failed"), viewModel.uiState.value.error)
         }
 
     @Test
@@ -392,7 +398,7 @@ class SessionDetailViewModelReorderTest {
             viewModel.onMoveEventDown(middle)
             advanceUntilIdle()
 
-            assertEquals("reorder failed", viewModel.uiState.value.error)
+            assertEquals(UiText.Raw("reorder failed"), viewModel.uiState.value.error)
         }
 
     private companion object {

@@ -32,7 +32,7 @@ fun EventTypeSelector(
                 selected = type == selectedType,
                 onClick = { onTypeSelected(type) },
                 label = {
-                    Text(type.name)
+                    Text(type.label())
                 }
             )
         }

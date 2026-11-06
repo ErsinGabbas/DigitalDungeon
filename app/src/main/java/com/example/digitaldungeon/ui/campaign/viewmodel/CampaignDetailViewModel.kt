@@ -3,7 +3,9 @@ package com.example.digitaldungeon.ui.campaign.viewmodel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.EventParticipant
+import com.example.digitaldungeon.ui.text.UiText
 import com.example.digitaldungeon.domain.model.Session
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.SessionRepository
@@ -86,7 +88,11 @@ class CampaignDetailViewModel @Inject constructor(
                             it.copy(
                                 campaign = campaign,
                                 isLoading = false,
-                                error = if (campaign == null) "Campaign not found" else null
+                                error = if (campaign == null) {
+                                    UiText.of(R.string.campaign_not_found)
+                                } else {
+                                    null
+                                }
                             )
                         }
                     }
@@ -94,7 +100,7 @@ class CampaignDetailViewModel @Inject constructor(
                 _campaignUiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to load campaign"
+                        error = e.asUiText(R.string.campaign_error_load_one_failed)
                     )
                 }
             }
@@ -146,7 +152,7 @@ class CampaignDetailViewModel @Inject constructor(
                 _sessionUiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to load sessions"
+                        error = e.asUiText(R.string.campaign_error_sessions_load_failed)
                     )
                 }
             }
@@ -185,7 +191,7 @@ class CampaignDetailViewModel @Inject constructor(
 
         if (title.isBlank()) {
             _sessionUiState.update {
-                it.copy(error = SESSION_TITLE_REQUIRED)
+                it.copy(error = UiText.of(R.string.campaign_session_title_required))
             }
             return
         }
@@ -212,7 +218,7 @@ class CampaignDetailViewModel @Inject constructor(
                 _sessionUiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to add session"
+                        error = e.asUiText(R.string.campaign_error_session_add_failed)
                     )
                 }
             }
@@ -268,7 +274,7 @@ class CampaignDetailViewModel @Inject constructor(
                 _sessionUiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to delete session"
+                        error = e.asUiText(R.string.campaign_error_session_delete_failed)
                     )
                 }
             }
@@ -336,7 +342,7 @@ class CampaignDetailViewModel @Inject constructor(
         // the session list could never show.
         if (title.isBlank()) {
             _sessionUiState.update {
-                it.copy(editError = SESSION_TITLE_REQUIRED)
+                it.copy(editError = UiText.of(R.string.campaign_session_title_required))
             }
             return
         }
@@ -365,7 +371,7 @@ class CampaignDetailViewModel @Inject constructor(
                 _sessionUiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Failed to update session"
+                        error = e.asUiText(R.string.campaign_error_session_update_failed)
                     )
                 }
             }
@@ -520,7 +526,7 @@ class CampaignDetailViewModel @Inject constructor(
                 _participantsUiState.update {
                     it.copy(
                         isSaving = false,
-                        error = e.message ?: "Failed to save participants"
+                        error = e.asUiText(R.string.campaign_error_participants_save_failed)
                     )
                 }
             }
@@ -537,24 +543,40 @@ class CampaignDetailViewModel @Inject constructor(
         val name = participantName.trim()
 
         if (name.isBlank()) {
-            return ParticipantFormResult.Invalid("Participant name cannot be empty")
+            return ParticipantFormResult.Invalid(
+                UiText.of(R.string.campaign_participant_name_required)
+            )
         }
 
         val level = participantLevel.trim().toIntOrNull()
-            ?: return ParticipantFormResult.Invalid("Level must be a whole number")
+            ?: return ParticipantFormResult.Invalid(
+                UiText.of(R.string.campaign_participant_level_not_a_number)
+            )
 
         if (level !in MIN_LEVEL..MAX_LEVEL) {
+            // The bounds are arguments and not part of the sentence: a
+            // translation decides where the numbers go in it.
             return ParticipantFormResult.Invalid(
-                "Level must be between $MIN_LEVEL and $MAX_LEVEL"
+                UiText.of(
+                    R.string.campaign_participant_level_out_of_range,
+                    MIN_LEVEL,
+                    MAX_LEVEL
+                )
             )
         }
 
         val maxHp = participantMaxHp.trim().toIntOrNull()
-            ?: return ParticipantFormResult.Invalid("Max HP must be a whole number")
+            ?: return ParticipantFormResult.Invalid(
+                UiText.of(R.string.campaign_participant_max_hp_not_a_number)
+            )
 
         if (maxHp !in MIN_MAX_HP..MAX_MAX_HP) {
             return ParticipantFormResult.Invalid(
-                "Max HP must be between $MIN_MAX_HP and $MAX_MAX_HP"
+                UiText.of(
+                    R.string.campaign_participant_max_hp_out_of_range,
+                    MIN_MAX_HP,
+                    MAX_MAX_HP
+                )
             )
         }
 
@@ -579,8 +601,6 @@ class CampaignDetailViewModel @Inject constructor(
 
         const val CAMPAIGN_ID_KEY = "campaignId"
 
-        const val SESSION_TITLE_REQUIRED = "Session title cannot be empty"
-
         const val MIN_LEVEL = 1
         const val MAX_LEVEL = 100
 
@@ -597,5 +617,6 @@ private sealed interface ParticipantFormResult {
 
     data class Valid(val participant: EventParticipant) : ParticipantFormResult
 
-    data class Invalid(val message: String) : ParticipantFormResult
+    /** The reason, still unformatted - see [UiText]. */
+    data class Invalid(val message: UiText) : ParticipantFormResult
 }

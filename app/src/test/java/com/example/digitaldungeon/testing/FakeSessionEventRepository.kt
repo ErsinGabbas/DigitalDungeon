@@ -2,6 +2,7 @@ package com.example.digitaldungeon.testing
 
 import com.example.digitaldungeon.data.repository.SessionEventRepository
 import com.example.digitaldungeon.data.repository.SessionEventRepository.MoveDirection
+import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
 import kotlinx.coroutines.flow.Flow
@@ -11,6 +12,11 @@ import kotlinx.coroutines.flow.flow
 /**
  * Hand written stand-in for [SessionEventRepository]; see [FakeCampaignRepository] for
  * the conventions (state-flow driven emissions, recorded calls, injectable failures).
+ *
+ * The recorded calls carry `participants` as well, because the whole point of that
+ * argument is that it is written through unchanged: an event's cast is a snapshot the
+ * repository stores verbatim, so "which list arrived here" is the only place a test can
+ * see whether a text-only edit preserved it.
  */
 class FakeSessionEventRepository : SessionEventRepository {
 
@@ -26,14 +32,16 @@ class FakeSessionEventRepository : SessionEventRepository {
         val sessionId: Int,
         val type: SessionEventType,
         val title: String?,
-        val content: String
+        val content: String,
+        val participants: List<EventParticipant> = emptyList()
     )
 
     data class UpdateEventCall(
         val eventId: Int,
         val title: String,
         val type: SessionEventType,
-        val content: String
+        val content: String,
+        val participants: List<EventParticipant> = emptyList()
     )
 
     data class MoveEventCall(
@@ -57,9 +65,10 @@ class FakeSessionEventRepository : SessionEventRepository {
         sessionId: Int,
         type: SessionEventType,
         title: String?,
-        content: String
+        content: String,
+        participants: List<EventParticipant>
     ) {
-        addEventCalls += AddEventCall(sessionId, type, title, content)
+        addEventCalls += AddEventCall(sessionId, type, title, content, participants)
         addEventError?.let { throw it }
     }
 
@@ -72,9 +81,10 @@ class FakeSessionEventRepository : SessionEventRepository {
         eventId: Int,
         title: String,
         type: SessionEventType,
-        content: String
+        content: String,
+        participants: List<EventParticipant>
     ) {
-        updateEventCalls += UpdateEventCall(eventId, title, type, content)
+        updateEventCalls += UpdateEventCall(eventId, title, type, content, participants)
         updateEventError?.let { throw it }
     }
 

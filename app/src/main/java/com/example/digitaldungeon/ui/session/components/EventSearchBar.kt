@@ -13,8 +13,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 /**
@@ -33,7 +35,7 @@ fun EventSearchBar(
         onValueChange = onQueryChange,
         modifier = modifier.fillMaxWidth(),
         singleLine = true,
-        placeholder = { Text("Search events...") },
+        placeholder = { Text(stringResource(R.string.session_search_placeholder)) },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Filled.Search,
@@ -45,7 +47,7 @@ fun EventSearchBar(
                 IconButton(onClick = onClearQuery) {
                     Icon(
                         imageVector = Icons.Filled.Clear,
-                        contentDescription = "Clear search"
+                        contentDescription = stringResource(R.string.session_action_clear_search)
                     )
                 }
             }

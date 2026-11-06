@@ -1,12 +1,14 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
 import com.example.digitaldungeon.testing.campaign
 import com.example.digitaldungeon.testing.session
 import com.example.digitaldungeon.ui.campaign.state.PendingSessionDeletion
+import com.example.digitaldungeon.ui.text.UiText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -136,7 +138,7 @@ class CampaignDetailViewModelEditSessionTest {
             advanceUntilIdle()
 
             assertEquals(
-                CampaignDetailViewModel.SESSION_TITLE_REQUIRED,
+                UiText.of(R.string.campaign_session_title_required),
                 viewModel.sessionUiState.value.editError
             )
         }
@@ -198,7 +200,7 @@ class CampaignDetailViewModelEditSessionTest {
             viewModel.confirmEditSession()
             advanceUntilIdle()
             assertEquals(
-                CampaignDetailViewModel.SESSION_TITLE_REQUIRED,
+                UiText.of(R.string.campaign_session_title_required),
                 viewModel.sessionUiState.value.editError
             )
 
@@ -347,7 +349,7 @@ class CampaignDetailViewModelEditSessionTest {
             viewModel.confirmEditSession()
             advanceUntilIdle()
 
-            assertEquals("update failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("update failed"), viewModel.sessionUiState.value.error)
             assertFalse(viewModel.sessionUiState.value.isLoading)
         }
 
@@ -364,7 +366,7 @@ class CampaignDetailViewModelEditSessionTest {
             viewModel.confirmEditSession()
             advanceUntilIdle()
 
-            assertEquals("update failed", viewModel.sessionUiState.value.error)
+            assertEquals(UiText.Raw("update failed"), viewModel.sessionUiState.value.error)
             assertNull(viewModel.campaignUiState.value.error)
             assertNull(viewModel.participantsUiState.value.error)
         }

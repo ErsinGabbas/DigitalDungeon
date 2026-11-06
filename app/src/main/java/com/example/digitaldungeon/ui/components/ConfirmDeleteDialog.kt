@@ -7,7 +7,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.digitaldungeon.R
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 /**
@@ -16,6 +18,9 @@ import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
  * Deliberately stateless: whoever shows it owns the "what is about to be deleted"
  * state, so the question survives configuration changes instead of living in a
  * `remember` that a screen rotation would throw away.
+ *
+ * [title] and [text] are already formatted strings - the caller names the thing
+ * being deleted, so only the caller can resolve the sentence that mentions it.
  */
 @Composable
 fun ConfirmDeleteDialog(
@@ -24,8 +29,8 @@ fun ConfirmDeleteDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    confirmLabel: String = "Delete",
-    dismissLabel: String = "Cancel"
+    confirmLabel: String = stringResource(R.string.common_delete),
+    dismissLabel: String = stringResource(R.string.common_cancel)
 ) {
 
     AlertDialog(
@@ -62,9 +67,11 @@ fun ConfirmDeleteDialog(
 private fun ConfirmDeleteDialogPreview() {
     DigitalDungeonTheme {
         ConfirmDeleteDialog(
-            title = "Delete campaign?",
-            text = "\"Curse of Strahd\" and all of its sessions and session events " +
-                "will be deleted permanently. This cannot be undone.",
+            title = stringResource(R.string.campaign_delete_dialog_title),
+            text = stringResource(
+                R.string.campaign_delete_dialog_text,
+                "Curse of Strahd"
+            ),
             onConfirm = {},
             onDismiss = {}
         )

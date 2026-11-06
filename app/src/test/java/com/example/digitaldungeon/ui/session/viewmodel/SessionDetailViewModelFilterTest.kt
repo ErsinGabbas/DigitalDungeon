@@ -2,6 +2,7 @@ package com.example.digitaldungeon.ui.session.viewmodel
 
 import androidx.lifecycle.SavedStateHandle
 import com.example.digitaldungeon.domain.model.SessionEventType
+import com.example.digitaldungeon.testing.FakeCampaignRepository
 import com.example.digitaldungeon.testing.FakeSessionEventRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
@@ -33,17 +34,20 @@ class SessionDetailViewModelFilterTest {
 
     private lateinit var sessionRepository: FakeSessionRepository
     private lateinit var eventRepository: FakeSessionEventRepository
+    private lateinit var campaignRepository: FakeCampaignRepository
 
     @Before
     fun setUp() {
         sessionRepository = FakeSessionRepository()
         eventRepository = FakeSessionEventRepository()
+        campaignRepository = FakeCampaignRepository()
     }
 
     private fun TestScope.createViewModel(): SessionDetailViewModel =
         SessionDetailViewModel(
             sessionRepository = sessionRepository,
             sessionEventRepository = eventRepository,
+            campaignRepository = campaignRepository,
             savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to SESSION_ID))
         ).also { advanceUntilIdle() }
 

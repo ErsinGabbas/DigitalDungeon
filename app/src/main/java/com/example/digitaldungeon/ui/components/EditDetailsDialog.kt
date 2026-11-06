@@ -10,8 +10,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.digitaldungeon.R
+import com.example.digitaldungeon.ui.text.UiText
+import com.example.digitaldungeon.ui.text.asString
 import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 
 /**
@@ -23,8 +27,9 @@ import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
  * half typed name away.
  *
  * @param error reason the last save attempt was refused, shown above the buttons.
- * The confirm button stays enabled on purpose - a button that silently does
- * nothing explains nothing.
+ * A [UiText] and not a [String]: it comes from a ViewModel, which cannot know the
+ * language, so it is formatted here where it is drawn. The confirm button stays
+ * enabled on purpose - a button that silently does nothing explains nothing.
  */
 @Composable
 fun EditDetailsDialog(
@@ -38,9 +43,9 @@ fun EditDetailsDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    error: String? = null,
-    confirmLabel: String = "Save",
-    dismissLabel: String = "Cancel"
+    error: UiText? = null,
+    confirmLabel: String = stringResource(R.string.common_save),
+    dismissLabel: String = stringResource(R.string.common_cancel)
 ) {
 
     AlertDialog(
@@ -78,7 +83,7 @@ fun EditDetailsDialog(
 
                 error?.let { message ->
                     Text(
-                        text = message,
+                        text = message.asString(),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -107,11 +112,11 @@ fun EditDetailsDialog(
 private fun EditDetailsDialogPreview() {
     DigitalDungeonTheme {
         EditDetailsDialog(
-            title = "Edit campaign",
+            title = stringResource(R.string.campaign_edit_dialog_title),
             nameValue = "Curse of Strahd",
-            nameLabel = "Campaign Name",
+            nameLabel = stringResource(R.string.campaign_name_label),
             detailsValue = "Gothic horror in the valley of Barovia",
-            detailsLabel = "Campaign Description",
+            detailsLabel = stringResource(R.string.campaign_description_label),
             onNameChange = {},
             onDetailsChange = {},
             onConfirm = {},
@@ -125,16 +130,16 @@ private fun EditDetailsDialogPreview() {
 private fun EditDetailsDialogWithErrorPreview() {
     DigitalDungeonTheme {
         EditDetailsDialog(
-            title = "Edit session",
+            title = stringResource(R.string.campaign_session_edit_dialog_title),
             nameValue = "",
-            nameLabel = "Session Title",
+            nameLabel = stringResource(R.string.campaign_session_title_label),
             detailsValue = "The party reaches the Death House",
-            detailsLabel = "Session Notes",
+            detailsLabel = stringResource(R.string.campaign_session_notes_label),
             onNameChange = {},
             onDetailsChange = {},
             onConfirm = {},
             onDismiss = {},
-            error = "Session title cannot be empty"
+            error = UiText.of(R.string.campaign_session_title_required)
         )
     }
 }

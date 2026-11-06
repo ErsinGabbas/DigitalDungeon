@@ -1,6 +1,7 @@
 package com.example.digitaldungeon.ui.campaign.state
 
 import com.example.digitaldungeon.domain.model.Campaign
+import com.example.digitaldungeon.ui.text.UiText
 
 /**
  * State of the campaign itself on the campaign detail screen.
@@ -13,5 +14,6 @@ data class CampaignDetailUiState(
     val campaignId: Int = 0,
     val campaign: Campaign? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    /** Formatted when drawn, so it follows a language change. See [UiText]. */
+    val error: UiText? = null
 )

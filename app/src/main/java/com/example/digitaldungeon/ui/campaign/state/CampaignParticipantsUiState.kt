@@ -1,6 +1,7 @@
 package com.example.digitaldungeon.ui.campaign.state
 
 import com.example.digitaldungeon.domain.model.EventParticipant
+import com.example.digitaldungeon.ui.text.UiText
 
 /**
  * Single source of truth for the participant block of the campaign detail screen.
@@ -17,7 +18,12 @@ data class CampaignParticipantsUiState(
     val participantMaxHp: String = "",
     val editingIndex: Int? = null,
     val isSaving: Boolean = false,
-    val error: String? = null
+    /**
+     * Why the form was refused, or the save failed. A [UiText] so the reason is
+     * formatted when it is drawn - the bounds in "Level must be between 1 and
+     * 100" are arguments, not part of the sentence.
+     */
+    val error: UiText? = null
 ) {
 
     val isEditing: Boolean
