@@ -30,8 +30,9 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # No setup-android step on purpose: the ubuntu-latest image already ships the
+      # Android SDK with ANDROID_HOME set and the licences accepted. Pulling the action
+      # in only added a dependency and a step that can fail before anything is built.
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
