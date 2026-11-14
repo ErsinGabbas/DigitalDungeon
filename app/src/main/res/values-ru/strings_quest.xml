@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Русская локализация трекера квестов.
+
+    Терминология: quest — квест, objective — цель, category — категория,
+    status — статус, priority — приоритет. «Скрытый» квест везде описан как
+    «группа о нём пока не знает»: это пометка для мастера, а не ограничение
+    доступа, и формулировка не должна обещать большего.
+-->
+<resources>
+
+    <!-- ============================================================
+         Список квестов
+         ============================================================ -->
+
+    <string name="quest_list_title">Квесты</string>
+    <string name="quest_create_action">Новый квест</string>
+    <string name="quest_empty">Квестов пока нет</string>
+    <string name="quest_no_matches">Нет квестов по текущему поиску и фильтрам</string>
+    <string name="quest_search_label">Поиск квестов</string>
+    <string name="quest_search_clear">Очистить поиск</string>
+    <string name="quest_action_clear_filters">Сбросить фильтры</string>
+
+    <!--
+        Число согласуется со вторым аргументом (всего квестов): «из 1 квеста»,
+        «из 2 квестов», «из 5 квестов». Формы few/many/other совпадают — после
+        «из» нужен родительный падеж.
+    -->
+    <plurals name="quest_filter_status">
+        <item quantity="one">Показано %1$d из %2$d квеста.</item>
+        <item quantity="few">Показано %1$d из %2$d квестов.</item>
+        <item quantity="many">Показано %1$d из %2$d квестов.</item>
+        <item quantity="other">Показано %1$d из %2$d квестов.</item>
+    </plurals>
+
+    <string name="quest_filter_status_any">Любой статус</string>
+    <string name="quest_filter_category_any">Любая категория</string>
+
+    <string name="quest_sort_heading">Сортировка</string>
+    <string name="quest_sort_priority">По приоритету</string>
+    <string name="quest_sort_newest">Сначала новые</string>
+
+    <string name="quest_delete_dialog_title">Удалить квест?</string>
+    <string name="quest_delete_dialog_text">Квест «%1$s» будет удалён. Отменить это будет нельзя.</string>
+
+    <!-- ============================================================
+         Квест
+         ============================================================ -->
+
+    <string name="quest_detail_title_fallback">Квест</string>
+    <string name="quest_not_found">Квест не найден</string>
+
+    <string name="quest_detail_description_empty">Описания нет</string>
+    <string name="quest_detail_category">Категория: %1$s</string>
+    <string name="quest_detail_priority">Приоритет: %1$s</string>
+    <string name="quest_detail_in_game_date">Дата в мире: %1$s</string>
+    <string name="quest_detail_hidden">Группа об этом квесте пока не знает</string>
+
+    <string name="quest_detail_status_heading">Статус</string>
+    <string name="quest_detail_status_hint">Нажмите на статус, чтобы перевести квест; завершённый квест так же можно открыть снова.</string>
+
+    <!-- ============================================================
+         Цели квеста
+         ============================================================ -->
+
+    <string name="quest_objectives_heading">Цели</string>
+    <string name="quest_objectives_empty">Целей пока нет — квесту они и не обязательны.</string>
+
+    <string name="quest_objective_title_label">Цель</string>
+    <string name="quest_objective_description_label">Подробности</string>
+    <string name="quest_objective_optional_label">Необязательный этап</string>
+    <string name="quest_objective_add">Добавить цель</string>
+    <string name="quest_objective_update">Сохранить цель</string>
+    <string name="quest_objective_optional_marker">Необязательная</string>
+
+    <string name="quest_objective_move_up">Переместить цель выше</string>
+    <string name="quest_objective_move_down">Переместить цель ниже</string>
+    <string name="quest_objective_move_up_at_edge">Это уже первая цель</string>
+    <string name="quest_objective_move_down_at_edge">Это уже последняя цель</string>
+
+    <string name="quest_objective_delete_dialog_title">Удалить цель?</string>
+    <string name="quest_objective_delete_dialog_text">Цель «%1$s» будет удалена. Отменить это будет нельзя.</string>
+
+    <string name="quest_objective_title_required">Цель не может быть пустой</string>
+    <string name="quest_error_objectives_load_failed">Не удалось загрузить цели</string>
+    <string name="quest_error_objective_add_failed">Не удалось добавить цель</string>
+    <string name="quest_error_objective_update_failed">Не удалось сохранить цель</string>
+    <string name="quest_error_objective_delete_failed">Не удалось удалить цель</string>
+    <string name="quest_error_objective_status_failed">Не удалось изменить статус цели</string>
+    <string name="quest_error_objective_move_failed">Не удалось изменить порядок целей</string>
+
+    <string name="quest_objective_status_not_started">Не начата</string>
+    <string name="quest_objective_status_completed">Выполнена</string>
+    <string name="quest_objective_status_failed">Провалена</string>
+
+    <!-- ============================================================
+         Награды
+         ============================================================ -->
+
+    <string name="quest_rewards_heading">Награды</string>
+    <string name="quest_rewards_empty">Пока ничего не записано</string>
+
+    <string name="quest_reward_title_label">Награда</string>
+    <string name="quest_reward_description_label">Подробности</string>
+    <string name="quest_reward_type_label">Чем</string>
+    <string name="quest_reward_add">Добавить награду</string>
+    <string name="quest_reward_update">Сохранить награду</string>
+    <string name="quest_reward_title_required">Награда не может быть пустой</string>
+
+    <string name="quest_reward_delete_dialog_title">Удалить награду?</string>
+    <string name="quest_reward_delete_dialog_text">Награда «%1$s» будет удалена. Отменить это будет нельзя.</string>
+
+    <string name="quest_reward_type_experience">Опыт</string>
+    <string name="quest_reward_type_money">Деньги</string>
+    <string name="quest_reward_type_item">Предмет</string>
+    <string name="quest_reward_type_reputation">Репутация</string>
+    <string name="quest_reward_type_other">Прочее</string>
+
+    <string name="quest_error_rewards_load_failed">Не удалось загрузить награды</string>
+    <string name="quest_error_reward_add_failed">Не удалось добавить награду</string>
+    <string name="quest_error_reward_update_failed">Не удалось сохранить награду</string>
+    <string name="quest_error_reward_delete_failed">Не удалось удалить награду</string>
+
+    <!-- ============================================================
+         Последствия
+         ============================================================ -->
+
+    <string name="quest_consequences_heading">Последствия</string>
+    <!--
+        «Пока ничего не последовало», а не «последствий нет»: пустой список
+        здесь означает, что история ещё не дошла, а не что мастер забыл
+        заполнить поле.
+    -->
+    <string name="quest_consequences_empty">Пока ничего не последовало</string>
+
+    <string name="quest_consequence_title_label">Что изменилось</string>
+    <string name="quest_consequence_description_label">Подробности</string>
+    <string name="quest_consequence_type_label">Чего касается</string>
+    <string name="quest_consequence_add">Добавить последствие</string>
+    <string name="quest_consequence_update">Сохранить последствие</string>
+    <string name="quest_consequence_title_required">Последствие не может быть пустым</string>
+
+    <string name="quest_consequence_delete_dialog_title">Удалить последствие?</string>
+    <string name="quest_consequence_delete_dialog_text">Последствие «%1$s» будет удалено. Отменить это будет нельзя.</string>
+
+    <string name="quest_consequence_type_world">Мира</string>
+    <string name="quest_consequence_type_npc">Чьей-то судьбы</string>
+    <string name="quest_consequence_type_faction">Фракции</string>
+    <string name="quest_consequence_type_other">Прочего</string>
+
+    <string name="quest_error_consequences_load_failed">Не удалось загрузить последствия</string>
+    <string name="quest_error_consequence_add_failed">Не удалось добавить последствие</string>
+    <string name="quest_error_consequence_update_failed">Не удалось сохранить последствие</string>
+    <string name="quest_error_consequence_delete_failed">Не удалось удалить последствие</string>
+
+    <!-- ============================================================
+         Заметки мастера о квесте
+         ============================================================ -->
+
+    <string name="quest_notes_heading">Заметки</string>
+    <string name="quest_notes_empty">Заметок пока нет</string>
+
+    <string name="quest_note_content_label">Заметка</string>
+    <string name="quest_note_add">Добавить заметку</string>
+    <string name="quest_note_update">Сохранить заметку</string>
+    <string name="quest_note_content_required">Заметка не может быть пустой</string>
+
+    <string name="quest_note_edited">Изменено %1$s</string>
+
+    <string name="quest_note_delete_dialog_title">Удалить заметку?</string>
+    <!-- Без имени во фразе: у заметки нет названия, только текст. -->
+    <string name="quest_note_delete_dialog_text">Эта заметка будет удалена. Отменить это будет нельзя.</string>
+
+    <string name="quest_error_notes_load_failed">Не удалось загрузить заметки</string>
+    <string name="quest_error_note_add_failed">Не удалось добавить заметку</string>
+    <string name="quest_error_note_update_failed">Не удалось сохранить заметку</string>
+    <string name="quest_error_note_delete_failed">Не удалось удалить заметку</string>
+
+    <!-- ============================================================
+         Связи между квестами
+         ============================================================ -->
+
+    <string name="quest_relations_heading">Связанные квесты</string>
+    <string name="quest_relations_empty">Этот квест сам по себе</string>
+    <string name="quest_relations_no_candidates">В этой кампании пока нет другого квеста, с которым можно связать</string>
+
+    <string name="quest_relation_group_parents">Часть</string>
+    <string name="quest_relation_group_children">Ведёт к</string>
+    <string name="quest_relation_group_precedes">Перед</string>
+    <string name="quest_relation_group_follows">После</string>
+    <string name="quest_relation_group_alternatives">Вместо</string>
+    <string name="quest_relation_group_related">Связан с</string>
+
+    <string name="quest_relation_kind_parent_of">Ведёт к…</string>
+    <string name="quest_relation_kind_child_of">Часть квеста…</string>
+    <string name="quest_relation_kind_precedes">Идёт перед…</string>
+    <string name="quest_relation_kind_follows">Идёт после…</string>
+    <string name="quest_relation_kind_alternative">Альтернатива для…</string>
+    <string name="quest_relation_kind_related">Связан с…</string>
+
+    <string name="quest_relation_kind_label">Этот квест</string>
+    <string name="quest_relation_target_label">С каким квестом</string>
+    <string name="quest_relation_target_placeholder">Выберите квест</string>
+    <string name="quest_relation_add">Добавить связь</string>
+    <string name="quest_relation_unknown_quest">Квест вне этого списка</string>
+
+    <string name="quest_relation_delete_dialog_title">Убрать связь?</string>
+    <string name="quest_relation_delete_dialog_text">Связь с квестом «%1$s» будет убрана. Оба квеста останутся как есть.</string>
+
+    <string name="quest_relation_target_required">Сначала выберите квест для связи</string>
+    <string name="quest_relation_refused_same_quest">Квест нельзя связать с самим собой</string>
+    <string name="quest_relation_refused_exists">Такая связь уже есть</string>
+    <string name="quest_relation_refused_other_campaign">Этот квест принадлежит другой кампании</string>
+    <string name="quest_relation_refused_cycle">Так квест стал бы своим же предком: этот квест уже выше по цепочке</string>
+    <string name="quest_relation_refused_missing">Этого квеста больше нет</string>
+
+    <string name="quest_error_relations_load_failed">Не удалось загрузить связи</string>
+    <string name="quest_error_relation_add_failed">Не удалось добавить связь</string>
+    <string name="quest_error_relation_delete_failed">Не удалось убрать связь</string>
+
+    <!-- ============================================================
+         История квеста
+         ============================================================ -->
+
+    <string name="quest_history_heading">История</string>
+    <string name="quest_history_empty">С этим квестом пока ничего не делали</string>
+
+    <!--
+        В журнале лежат данные, а не фразы — имя константы статуса или название цели, —
+        поэтому фраза собирается здесь, при отрисовке, на том языке, на котором её читают.
+        %1$s — это сохранённое значение.
+    -->
+    <string name="quest_history_status_changed">Статус: %1$s</string>
+    <string name="quest_history_objective_completed">Цель выполнена: %1$s</string>
+    <string name="quest_history_objective_failed">Цель провалена: %1$s</string>
+    <string name="quest_history_objective_reopened">Цель открыта снова: %1$s</string>
+
+    <string name="quest_error_history_load_failed">Не удалось загрузить историю</string>
+
+    <!-- ============================================================
+         Сессии, в которых всплывал квест
+         ============================================================ -->
+
+    <string name="quest_sessions_heading">Всплывал в</string>
+    <string name="quest_sessions_empty">Пока не отмечен ни в одной сессии</string>
+    <string name="quest_sessions_no_candidates">В этой кампании пока нет сессий</string>
+
+    <string name="quest_session_picker_label">Сессия</string>
+    <string name="quest_session_picker_placeholder">Выберите сессию</string>
+    <string name="quest_session_add">Отметить в сессии</string>
+    <string name="quest_session_unknown">Сессия вне этого списка</string>
+
+    <string name="quest_session_unlink_dialog_title">Убрать отметку?</string>
+    <string name="quest_session_unlink_dialog_text">Отметка о том, что квест всплывал в сессии «%1$s», будет убрана. Ни квест, ни сессия не удаляются.</string>
+
+    <string name="quest_session_required">Сначала выберите сессию</string>
+    <string name="quest_session_refused_exists">Этот квест уже отмечен в той сессии</string>
+    <string name="quest_session_refused_other_campaign">Эта сессия принадлежит другой кампании</string>
+    <string name="quest_session_refused_quest_missing">Этого квеста больше нет</string>
+    <string name="quest_session_refused_session_missing">Этой сессии больше нет</string>
+
+    <string name="quest_error_session_links_load_failed">Не удалось загрузить сессии</string>
+    <string name="quest_error_session_link_add_failed">Не удалось отметить квест в сессии</string>
+    <string name="quest_error_session_link_delete_failed">Не удалось убрать отметку</string>
+
+    <!-- ============================================================
+         Создание и редактирование
+         ============================================================ -->
+
+    <string name="quest_create_title">Новый квест</string>
+    <string name="quest_edit_title">Изменить квест</string>
+
+    <string name="quest_title_label">Название квеста</string>
+    <string name="quest_description_label">Описание</string>
+    <string name="quest_category_label">Категория</string>
+    <string name="quest_status_label">Статус</string>
+    <string name="quest_priority_label">Приоритет</string>
+    <string name="quest_in_game_date_label">Дата в мире</string>
+    <string name="quest_hidden_label">Группа пока не знает о квесте</string>
+
+    <string name="quest_optional_show">Ещё поля</string>
+    <string name="quest_optional_hide">Свернуть поля</string>
+
+    <!-- ============================================================
+         Проверка ввода и ошибки
+         ============================================================ -->
+
+    <string name="quest_title_required">Название квеста не может быть пустым</string>
+
+    <string name="quest_error_load_failed">Не удалось загрузить квесты</string>
+    <string name="quest_error_load_one_failed">Не удалось загрузить квест</string>
+    <string name="quest_error_add_failed">Не удалось добавить квест</string>
+    <string name="quest_error_update_failed">Не удалось сохранить квест</string>
+    <string name="quest_error_delete_failed">Не удалось удалить квест</string>
+    <string name="quest_error_status_failed">Не удалось изменить статус</string>
+
+    <!-- ============================================================
+         Названия категорий, статусов и приоритетов
+         ============================================================ -->
+
+    <string name="quest_category_main">Основной сюжет</string>
+    <string name="quest_category_side">Побочный</string>
+    <string name="quest_category_personal">Персональный</string>
+    <string name="quest_category_faction">Фракционный</string>
+    <string name="quest_category_repeatable">Повторяемый</string>
+    <string name="quest_category_other">Прочее</string>
+
+    <string name="quest_status_not_started">Не начат</string>
+    <string name="quest_status_active">В работе</string>
+    <string name="quest_status_paused">Приостановлен</string>
+    <string name="quest_status_completed">Завершён</string>
+    <string name="quest_status_failed">Провален</string>
+    <string name="quest_status_cancelled">Отменён</string>
+
+    <string name="quest_priority_high">Высокий</string>
+    <string name="quest_priority_normal">Обычный</string>
+    <string name="quest_priority_low">Низкий</string>
+
+</resources>

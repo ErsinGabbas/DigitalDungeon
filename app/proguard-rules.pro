@@ -24,12 +24,37 @@
 
 
 # --- Enums persisted as TEXT -------------------------------------------------------
-# Room stores SessionEvent.type in a TEXT column using the enum constant names, the Room
-# migrations write those names as SQL literals, and the UI renders type.name directly.
-# Renaming the constants would make already stored rows unreadable, so pin the names.
+# Room stores SessionEvent.type and the eight quest enums in TEXT columns using the enum
+# constant names, the Room migrations write those names as SQL literals, and the backup
+# document carries them as plain text. Renaming the constants would make already stored
+# rows unreadable, so pin the names.
 # (values()/valueOf() are already kept for every enum by proguard-android-optimize.txt;
-# this rule adds the constant fields, which that default rule does not cover.)
+# these rules add the constant fields, which that default rule does not cover.)
 -keepclassmembers enum com.example.digitaldungeon.domain.model.SessionEventType {
+    <fields>;
+}
+-keepclassmembers enum com.example.digitaldungeon.domain.model.QuestCategory {
+    <fields>;
+}
+-keepclassmembers enum com.example.digitaldungeon.domain.model.QuestStatus {
+    <fields>;
+}
+-keepclassmembers enum com.example.digitaldungeon.domain.model.QuestPriority {
+    <fields>;
+}
+-keepclassmembers enum com.example.digitaldungeon.domain.model.QuestObjectiveStatus {
+    <fields>;
+}
+-keepclassmembers enum com.example.digitaldungeon.domain.model.QuestRewardType {
+    <fields>;
+}
+-keepclassmembers enum com.example.digitaldungeon.domain.model.QuestConsequenceType {
+    <fields>;
+}
+-keepclassmembers enum com.example.digitaldungeon.domain.model.QuestRelationType {
+    <fields>;
+}
+-keepclassmembers enum com.example.digitaldungeon.domain.model.QuestHistoryEventType {
     <fields>;
 }
 

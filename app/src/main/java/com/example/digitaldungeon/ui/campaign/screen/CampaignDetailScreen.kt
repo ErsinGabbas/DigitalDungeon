@@ -69,6 +69,7 @@ import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 fun CampaignDetailScreen(
     onBack: () -> Unit,
     onOpenSession: (Int) -> Unit,
+    onOpenQuests: (Int) -> Unit,
     viewModel: CampaignDetailViewModel = hiltViewModel()
 ) {
     val campaignState by viewModel.campaignUiState.collectAsStateWithLifecycle()
@@ -111,6 +112,7 @@ fun CampaignDetailScreen(
         sessionsState = sessionsState,
         onBack = onBack,
         onOpenSession = onOpenSession,
+        onOpenQuests = onOpenQuests,
         participantActions = participantActions,
         sessionActions = sessionActions
     )
@@ -133,8 +135,10 @@ fun CampaignDetailScreen(
  * reason this is lazy, which is a campaign with two hundred sessions.
  *
  * @param onBack the navigate-up button. Navigation, so it comes from the graph.
- * @param onOpenSession a session row was opened, by id. Navigation as well, which
- * is why neither of these two is part of [CampaignSessionActions].
+ * @param onOpenSession a session row was opened, by id.
+ * @param onOpenQuests the quest tracker of this campaign was opened, by campaign
+ * id. Navigation as well, which is why none of these three is part of
+ * [CampaignSessionActions].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -144,6 +148,7 @@ fun CampaignDetailScreenContent(
     sessionsState: CampaignSessionsUiState,
     onBack: () -> Unit,
     onOpenSession: (Int) -> Unit,
+    onOpenQuests: (Int) -> Unit,
     participantActions: CampaignParticipantActions = CampaignParticipantActions(),
     sessionActions: CampaignSessionActions = CampaignSessionActions()
 ) {
@@ -257,6 +262,25 @@ fun CampaignDetailScreenContent(
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
+            }
+
+            // The quest tracker of this campaign. A button and not a second list on this screen:
+            // quests have their own search, filters and sort order, and they are read to answer a
+            // different question than "what happened in which session".
+            //
+            // Keyed on the id from the route rather than on the loaded campaign, so it works
+            // before - and even if - the campaign itself arrives.
+            item {
+                Button(
+                    onClick = {
+                        onOpenQuests(campaignState.campaignId)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp)
+                ) {
+                    Text(stringResource(R.string.campaign_quests_open))
+                }
             }
 
             // Participants - single editable collection seeded from the campaign
@@ -479,7 +503,8 @@ private fun PreviewCampaignDetailScreen(
             participantsState = participantsState,
             sessionsState = sessionsState,
             onBack = {},
-            onOpenSession = {}
+            onOpenSession = {},
+            onOpenQuests = {}
         )
     }
 }

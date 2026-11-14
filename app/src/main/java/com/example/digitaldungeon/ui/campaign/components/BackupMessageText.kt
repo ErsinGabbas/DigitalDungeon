@@ -29,7 +29,7 @@ fun BackupMessage.asBannerText(): String = when (this) {
         campaignCount
     )
 
-    // Five counts, each pluralised on its own and placed by the frame, so a
+    // Six counts, each pluralised on its own and placed by the frame, so a
     // translation can put the whole list in whatever order it reads best in.
     is BackupMessage.RestoreSucceeded -> stringResource(
         R.string.backup_restore_success,
@@ -40,6 +40,7 @@ fun BackupMessage.asBannerText(): String = when (this) {
             participants,
             participants
         ),
+        pluralStringResource(R.plurals.backup_quest_count, quests, quests),
         pluralStringResource(R.plurals.backup_session_count, sessions, sessions),
         pluralStringResource(R.plurals.backup_event_count, events, events)
     )

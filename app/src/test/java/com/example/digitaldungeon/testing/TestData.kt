@@ -2,6 +2,12 @@ package com.example.digitaldungeon.testing
 
 import com.example.digitaldungeon.domain.model.Campaign
 import com.example.digitaldungeon.domain.model.EventParticipant
+import com.example.digitaldungeon.domain.model.Quest
+import com.example.digitaldungeon.domain.model.QuestCategory
+import com.example.digitaldungeon.domain.model.QuestObjective
+import com.example.digitaldungeon.domain.model.QuestObjectiveStatus
+import com.example.digitaldungeon.domain.model.QuestPriority
+import com.example.digitaldungeon.domain.model.QuestStatus
 import com.example.digitaldungeon.domain.model.Session
 import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
@@ -47,6 +53,48 @@ fun participant(
     name = name,
     level = level,
     maxHp = maxHp
+)
+
+fun quest(
+    id: Int = 1,
+    campaignId: Int = 1,
+    title: String = "Quest $id",
+    description: String = "description of quest $id",
+    category: QuestCategory = QuestCategory.SIDE,
+    status: QuestStatus = QuestStatus.NOT_STARTED,
+    priority: QuestPriority = QuestPriority.NORMAL,
+    isHidden: Boolean = false,
+    createdAt: Long = 1_000L,
+    inGameDate: String? = null
+) = Quest(
+    id = id,
+    campaignId = campaignId,
+    title = title,
+    description = description,
+    category = category,
+    status = status,
+    priority = priority,
+    isHidden = isHidden,
+    createdAt = createdAt,
+    inGameDate = inGameDate
+)
+
+fun questObjective(
+    id: Int = 1,
+    questId: Int = 1,
+    title: String = "Objective $id",
+    description: String = "details of objective $id",
+    status: QuestObjectiveStatus = QuestObjectiveStatus.NOT_STARTED,
+    orderIndex: Int = 0,
+    isOptional: Boolean = false
+) = QuestObjective(
+    id = id,
+    questId = questId,
+    title = title,
+    description = description,
+    status = status,
+    orderIndex = orderIndex,
+    isOptional = isOptional
 )
 
 fun sessionEvent(

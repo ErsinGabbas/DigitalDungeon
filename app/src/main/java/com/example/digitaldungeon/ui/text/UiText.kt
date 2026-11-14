@@ -46,6 +46,23 @@ fun UiText.asString(): String = when (this) {
     is UiText.Raw -> value
 }
 
+/**
+ * The failure as something a screen can show: the throwable's own message when it has one -
+ * untranslatable, because it comes from Room, from the platform, from anywhere but this app, so it
+ * travels as [UiText.Raw] - and the localized [fallback] when it does not.
+ *
+ * Next to [UiText] itself rather than in one feature's ViewModel, because every ViewModel in the
+ * app needs exactly this and a second copy of it would be a second set of rules about when a
+ * message is translatable.
+ *
+ * A [Throwable] and not an `Exception`, so it can also be used from `Flow.catch`, which hands over
+ * a [Throwable].
+ */
+fun Throwable.asUiText(@StringRes fallback: Int): UiText =
+    message?.takeIf { it.isNotBlank() }
+        ?.let { UiText.Raw(it) }
+        ?: UiText.of(fallback)
+
 /** Non-composable resolution, for places that already hold a [Context]. */
 fun UiText.resolve(context: Context): String = when (this) {
     is UiText.Resource ->
