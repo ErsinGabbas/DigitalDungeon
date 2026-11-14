@@ -1,6 +1,8 @@
 package com.example.digitaldungeon.ui.session.state
 
 import com.example.digitaldungeon.domain.model.EventParticipant
+import com.example.digitaldungeon.domain.model.Quest
+import com.example.digitaldungeon.domain.model.QuestSessionLink
 import com.example.digitaldungeon.domain.model.Session
 import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
@@ -21,6 +23,20 @@ data class SessionDetailUiState(
      * copy, see [SessionEvent.participants].
      */
     val campaignParticipants: List<EventParticipant> = emptyList(),
+    /**
+     * Which quests are recorded as having come up in this session.
+     *
+     * Read-only here. A quest is linked from the quest's own screen, which is where the campaign's
+     * quests are already on hand; this screen only offers the way across.
+     */
+    val questLinks: List<QuestSessionLink> = emptyList(),
+    /**
+     * The quests of this session's campaign, which is where the titles of [questLinks] come from.
+     *
+     * Arrives one step after the session does, like [campaignParticipants] and for the same
+     * reason: the campaign is only reachable through `session.campaignId`.
+     */
+    val campaignQuests: List<Quest> = emptyList(),
     val quickNoteText: String = "",
     val selectedEventType: SessionEventType = SessionEventType.NOTE,
     /**
@@ -103,6 +119,25 @@ data class SessionDetailUiState(
     val canSelectEditParticipants: Boolean
         get() = editParticipantOptions.isNotEmpty()
 
+    /**
+     * The linked quests with their titles, in the campaign's own order.
+     *
+     * Derived rather than stored, like every other view in this state: the links know ids, and the
+     * titles live in another list that arrives separately. A title is `null` for one frame if the
+     * link lands before the quests do, and the screen says so rather than drawing a blank row.
+     */
+    val linkedQuests: List<SessionQuestEntry> = questLinks.map { link ->
+        SessionQuestEntry(
+            link = link,
+            questId = link.questId,
+            questTitle = campaignQuests.firstOrNull { it.id == link.questId }?.title
+        )
+    }
+
+    /** No quest is recorded for this session - a normal state, and the starting one. */
+    val hasNoLinkedQuests: Boolean
+        get() = questLinks.isEmpty()
+
     /** True while the timeline on screen is a subset of [events]. */
     val isFilterActive: Boolean
         get() = searchQuery.isNotBlank() || typeFilter != null
@@ -145,3 +180,15 @@ private fun SessionEvent.matches(needle: String): Boolean {
     return title?.contains(needle, ignoreCase = true) == true ||
         content.contains(needle, ignoreCase = true)
 }
+
+/**
+ * One quest recorded as having come up in this session, as the screen draws it.
+ *
+ * @param questTitle `null` when the quest is not among the loaded ones; see
+ *   [SessionDetailUiState.linkedQuests].
+ */
+data class SessionQuestEntry(
+    val link: QuestSessionLink,
+    val questId: Int,
+    val questTitle: String?
+)

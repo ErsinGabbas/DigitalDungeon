@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.SessionEventType
 import com.example.digitaldungeon.testing.FakeCampaignRepository
+import com.example.digitaldungeon.testing.FakeQuestRepository
+import com.example.digitaldungeon.testing.FakeQuestSessionLinkRepository
 import com.example.digitaldungeon.testing.FakeSessionEventRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
@@ -31,12 +33,16 @@ class SessionDetailViewModelTest {
     private lateinit var sessionRepository: FakeSessionRepository
     private lateinit var eventRepository: FakeSessionEventRepository
     private lateinit var campaignRepository: FakeCampaignRepository
+    private lateinit var questRepository: FakeQuestRepository
+    private lateinit var questSessionLinkRepository: FakeQuestSessionLinkRepository
 
     @Before
     fun setUp() {
         sessionRepository = FakeSessionRepository()
         eventRepository = FakeSessionEventRepository()
         campaignRepository = FakeCampaignRepository()
+        questRepository = FakeQuestRepository()
+        questSessionLinkRepository = FakeQuestSessionLinkRepository()
     }
 
     /** Creates the ViewModel and lets the `init` subscriptions settle. */
@@ -45,6 +51,8 @@ class SessionDetailViewModelTest {
             sessionRepository = sessionRepository,
             sessionEventRepository = eventRepository,
             campaignRepository = campaignRepository,
+            questRepository = questRepository,
+            questSessionLinkRepository = questSessionLinkRepository,
             savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to sessionId))
         ).also { advanceUntilIdle() }
 
@@ -66,6 +74,8 @@ class SessionDetailViewModelTest {
             sessionRepository = sessionRepository,
             sessionEventRepository = eventRepository,
             campaignRepository = campaignRepository,
+            questRepository = questRepository,
+            questSessionLinkRepository = questSessionLinkRepository,
             savedStateHandle = SavedStateHandle()
         )
     }

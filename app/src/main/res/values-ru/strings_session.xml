@@ -104,4 +104,13 @@
     <!-- %1$s имя, %2$d уровень, %3$d максимум HP -->
     <string name="session_export_participant_line">%1$s (ур. %2$d, HP %3$d)</string>
 
+    <!-- ============================================================
+         Квесты, всплывавшие в этой сессии
+         ============================================================ -->
+
+    <string name="session_quests_heading">Квесты этой сессии</string>
+    <string name="session_quests_empty">Для этой сессии не отмечен ни один квест. Отметка ставится со стороны квеста.</string>
+    <string name="session_quests_unknown">Квест вне этого списка</string>
+    <string name="session_error_quests_load_failed">Не удалось загрузить квесты этой сессии</string>
+
 </resources>

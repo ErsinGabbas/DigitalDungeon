@@ -39,6 +39,7 @@ import com.example.digitaldungeon.ui.session.components.FilterStatusLine
 import com.example.digitaldungeon.ui.session.components.NoMatchingEventsState
 import com.example.digitaldungeon.ui.session.components.QuickNoteInput
 import com.example.digitaldungeon.ui.session.components.SessionEventCard
+import com.example.digitaldungeon.ui.session.components.SessionQuestsSection
 import com.example.digitaldungeon.ui.session.components.previewAllEvents
 import com.example.digitaldungeon.ui.session.components.previewCampaignParticipants
 import com.example.digitaldungeon.ui.session.components.previewDepartedParticipant
@@ -64,6 +65,7 @@ import com.example.digitaldungeon.ui.theme.DigitalDungeonTheme
 @Composable
 fun SessionDetailScreen(
     onBack: () -> Unit,
+    onOpenQuest: (Int) -> Unit,
     viewModel: SessionDetailViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -152,6 +154,7 @@ fun SessionDetailScreen(
         state = uiState,
         now = now,
         onBack = onBack,
+        onOpenQuest = onOpenQuest,
         // Not remembered on purpose: it reads the session title out of the state
         // at the moment it is pressed, and a cached lambda could share a stale one
         onShareSessionLog = {
@@ -202,6 +205,7 @@ fun SessionDetailScreenContent(
     now: Long,
     onBack: () -> Unit,
     onShareSessionLog: () -> Unit,
+    onOpenQuest: (Int) -> Unit = {},
     quickNoteActions: QuickNoteActions = QuickNoteActions(),
     filterActions: TimelineFilterActions = TimelineFilterActions(),
     eventActions: SessionEventActions = SessionEventActions(),
@@ -276,6 +280,15 @@ fun SessionDetailScreenContent(
                 participantOptions = state.campaignParticipants,
                 selectedParticipants = state.quickNoteParticipants,
                 actions = quickNoteActions
+            )
+
+            // Above the timeline, because the timeline is the part of this screen that grows
+            // without bound - see SessionQuestsSection.
+            SessionQuestsSection(
+                entries = state.linkedQuests,
+                hasNoLinkedQuests = state.hasNoLinkedQuests,
+                onOpenQuest = onOpenQuest,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
 
             Text(

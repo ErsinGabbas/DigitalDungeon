@@ -29,6 +29,18 @@ interface SessionDao {
     )
 
     /**
+     * Which campaign a session belongs to, or `null` if there is no such session.
+     *
+     * The counterpart of `QuestDao.getCampaignIdForQuest`, and there for the same rule: a quest may
+     * only be linked to a session of its own campaign, and a foreign key cannot say that. The
+     * check is made before the row is written and this is what it reads.
+     */
+    @Query(
+        "SELECT campaignId FROM sessions WHERE id = :id"
+    )
+    suspend fun getCampaignIdForSession(id: Int): Int?
+
+    /**
      * Every session of every campaign, for a full backup. Ordered so the produced document is
      * stable: the same database always exports byte-identical content.
      */
