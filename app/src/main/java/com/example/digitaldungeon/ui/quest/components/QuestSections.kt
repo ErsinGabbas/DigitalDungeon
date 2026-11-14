@@ -79,7 +79,7 @@ fun LazyListScope.objectivesSection(
 
     itemsIndexed(
         items = objectivesState.objectives,
-        key = { _, objective -> objective.id }
+        key = { _, objective -> "objective-${objective.id}" }
     ) { index, objective ->
 
         QuestObjectiveRow(
@@ -136,7 +136,7 @@ fun LazyListScope.rewardsSection(
 
     items(
         items = rewardsState.rewards,
-        key = { reward -> reward.id }
+        key = { reward -> "reward-${reward.id}" }
     ) { reward ->
 
         QuestEntryRow(
@@ -197,7 +197,7 @@ fun LazyListScope.consequencesSection(
 
     items(
         items = consequencesState.consequences,
-        key = { consequence -> consequence.id }
+        key = { consequence -> "consequence-${consequence.id}" }
     ) { consequence ->
 
         QuestEntryRow(
@@ -258,7 +258,7 @@ fun LazyListScope.notesSection(
 
     items(
         items = notesState.notes,
-        key = { note -> note.id }
+        key = { note -> "note-${note.id}" }
     ) { note ->
 
         QuestNoteRow(

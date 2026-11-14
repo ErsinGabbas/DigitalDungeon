@@ -115,7 +115,7 @@ fun LazyListScope.historySection(
 
     items(
         items = historyState.entries,
-        key = { entry -> entry.id }
+        key = { entry -> "history-${entry.id}" }
     ) { entry ->
 
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -177,7 +177,7 @@ fun LazyListScope.questSessionsSection(
 
     items(
         items = sessionsState.entries,
-        key = { entry -> entry.link.id }
+        key = { entry -> "session-link-${entry.link.id}" }
     ) { entry ->
 
         Row(

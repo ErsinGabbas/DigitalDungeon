@@ -126,7 +126,7 @@ fun LazyListScope.relationsSection(
 
             items(
                 count = links.size,
-                key = { index -> links[index].relation.id }
+                key = { index -> "relation-${links[index].relation.id}" }
             ) { index ->
 
                 val link = links[index]
