@@ -27,6 +27,13 @@ kotlinxSerializationJson = "1.8.0"
 # 1.7.1, lifecycle 2.8.7 for 1.7.3, so Gradle resolves 1.7.3). Keep these in sync: a newer
 # coroutines-test would drag coroutines-core up for the whole project.
 kotlinxCoroutinesTest = "1.7.3"
+# 4.14.1 is the first release with an android-all jar for SDK 35, which is this project's
+# compileSdk. Robolectric runs the DAO, backup and migration-adjacent tests on the JVM, so
+# they need no device; androidTest keeps only what genuinely needs one.
+robolectric = "4.14.1"
+# Provides ApplicationProvider, which is how a Robolectric test gets the Context that
+# Room.inMemoryDatabaseBuilder asks for. The matching androidx.test.ext:junit is already here.
+androidxTestCore = "1.6.1"
 ksp = "2.0.21-1.0.28"
 
 [libraries]
@@ -73,6 +80,11 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 
 # Unit tests only: runTest, TestDispatcher, advanceUntilIdle
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
+
+# Unit tests only: runs the Android framework on the JVM, so Room's real SQLite can be
+# exercised without a device.
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "androidxTestCore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

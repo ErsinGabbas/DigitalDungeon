@@ -88,6 +88,14 @@ android {
             assets.srcDirs("$projectDir/schemas")
         }
     }
+
+    testOptions {
+        unitTests {
+            // Robolectric resolves R.string in the JVM tests, which is what lets the
+            // UiText assertions compare rendered text rather than resource ids.
+            isIncludeAndroidResources = true
+        }
+    }
 }
 
 ksp {
@@ -132,6 +140,15 @@ dependencies {
     testImplementation(libs.junit)
     // runTest / StandardTestDispatcher for ViewModel unit tests
     testImplementation(libs.kotlinx.coroutines.test)
+    // Runs the DAO and backup tests against real SQLite on the JVM, without a device
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
+    // AndroidJUnit4 delegates to Robolectric off-device, so the moved tests keep their runner
+    testImplementation(libs.androidx.junit)
+    // Compose UI testing on the JVM, for the regression test on the quest screen's item keys
+    testImplementation(platform(libs.androidx.compose.bom))
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.compose.ui.test.manifest)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.junit)
