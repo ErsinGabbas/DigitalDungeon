@@ -4,6 +4,8 @@ import androidx.lifecycle.SavedStateHandle
 import com.example.digitaldungeon.data.repository.SessionEventRepository.MoveDirection
 import com.example.digitaldungeon.domain.model.SessionEventType
 import com.example.digitaldungeon.testing.FakeCampaignRepository
+import com.example.digitaldungeon.testing.FakeQuestRepository
+import com.example.digitaldungeon.testing.FakeQuestSessionLinkRepository
 import com.example.digitaldungeon.testing.FakeSessionEventRepository
 import com.example.digitaldungeon.testing.FakeSessionRepository
 import com.example.digitaldungeon.testing.MainDispatcherRule
@@ -38,12 +40,16 @@ class SessionDetailViewModelReorderTest {
     private lateinit var sessionRepository: FakeSessionRepository
     private lateinit var eventRepository: FakeSessionEventRepository
     private lateinit var campaignRepository: FakeCampaignRepository
+    private lateinit var questRepository: FakeQuestRepository
+    private lateinit var questSessionLinkRepository: FakeQuestSessionLinkRepository
 
     @Before
     fun setUp() {
         sessionRepository = FakeSessionRepository()
         eventRepository = FakeSessionEventRepository()
         campaignRepository = FakeCampaignRepository()
+        questRepository = FakeQuestRepository()
+        questSessionLinkRepository = FakeQuestSessionLinkRepository()
     }
 
     private val first = sessionEvent(
@@ -78,6 +84,8 @@ class SessionDetailViewModelReorderTest {
             sessionRepository = sessionRepository,
             sessionEventRepository = eventRepository,
             campaignRepository = campaignRepository,
+            questRepository = questRepository,
+            questSessionLinkRepository = questSessionLinkRepository,
             savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to SESSION_ID))
         ).also { advanceUntilIdle() }
     }
@@ -204,6 +212,8 @@ class SessionDetailViewModelReorderTest {
                 sessionRepository = sessionRepository,
                 sessionEventRepository = eventRepository,
             campaignRepository = campaignRepository,
+            questRepository = questRepository,
+            questSessionLinkRepository = questSessionLinkRepository,
                 savedStateHandle = SavedStateHandle(mapOf(SESSION_ID_KEY to SESSION_ID))
             ).also { advanceUntilIdle() }
 

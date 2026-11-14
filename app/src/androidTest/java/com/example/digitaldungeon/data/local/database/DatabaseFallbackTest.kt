@@ -248,8 +248,15 @@ class DatabaseFallbackTest {
         /** Deliberately different from the production `digital_dungeon_db`. */
         const val TEST_DB = "fallback_test_db"
         const val LEGACY_VERSION = 2
-        const val CURRENT_VERSION = 8
+        const val CURRENT_VERSION = 13
         val EXPECTED_TABLES =
-            setOf("campaigns", "campaign_participants", "sessions", "session_events")
+            setOf(
+                "campaigns",
+                "campaign_participants",
+                "sessions",
+                "session_events",
+                "quests",
+                "quest_objectives"
+            )
     }
 }

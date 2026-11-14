@@ -45,8 +45,8 @@
 
     <string name="campaign_edit_dialog_title">Edit campaign</string>
     <string name="campaign_delete_dialog_title">Delete campaign?</string>
-    <!-- %1$s is the campaign name. Spells out the cascade: sessions and events go too. -->
-    <string name="campaign_delete_dialog_text">\"%1$s\" will be deleted together with all of its sessions and every event recorded in them. This cannot be undone.</string>
+    <!-- %1$s is the campaign name. Spells out the cascade: quests, sessions and events go too. -->
+    <string name="campaign_delete_dialog_text">\"%1$s\" will be deleted together with all of its quests, all of its sessions and every event recorded in them. This cannot be undone.</string>
 
     <!-- ============================================================
          Campaign detail
@@ -55,6 +55,14 @@
     <!-- Top bar title before the campaign has loaded, or if it is gone. -->
     <string name="campaign_detail_title_fallback">Campaign</string>
     <string name="campaign_not_found">Campaign not found</string>
+
+    <!--
+        Entry point into the quest tracker of this campaign. A button and not a
+        list: quests are a screen of their own, with their own search, filters and
+        sort order, and a second long list on the campaign screen would compete
+        with the sessions for the same space.
+    -->
+    <string name="campaign_quests_open">Quests</string>
 
     <string name="campaign_participants_heading">Campaign Participants:</string>
     <string name="campaign_participants_unsaved">Unsaved changes</string>
@@ -125,8 +133,8 @@
 
     <!-- Export succeeded. %1$d is how many campaigns went into the file. -->
     <plurals name="backup_export_success">
-        <item quantity="one">Backup saved: %1$d campaign, including every session and event.</item>
-        <item quantity="other">Backup saved: %1$d campaigns, including every session and event.</item>
+        <item quantity="one">Backup saved: %1$d campaign, including every quest, session and event.</item>
+        <item quantity="other">Backup saved: %1$d campaigns, including every quest, session and event.</item>
     </plurals>
 
     <!-- %1$s is the reason the file could not be written. -->
@@ -138,7 +146,7 @@
         whether their sessions came back. Each count is a plural of its own and
         the frame places them, so a translation can reorder the whole sentence.
     -->
-    <string name="backup_restore_success">Restore complete: %1$s - %2$s, %3$s, %4$s, %5$s.</string>
+    <string name="backup_restore_success">Restore complete: %1$s - %2$s, %3$s, %4$s, %5$s, %6$s.</string>
 
     <plurals name="backup_record_count">
         <item quantity="one">%1$d record</item>
@@ -153,6 +161,11 @@
     <plurals name="backup_participant_count">
         <item quantity="one">%1$d participant</item>
         <item quantity="other">%1$d participants</item>
+    </plurals>
+
+    <plurals name="backup_quest_count">
+        <item quantity="one">%1$d quest</item>
+        <item quantity="other">%1$d quests</item>
     </plurals>
 
     <plurals name="backup_session_count">
@@ -178,7 +191,7 @@
 
     <!-- The wall in front of a restore: it replaces everything, it does not merge. -->
     <string name="backup_restore_warning_title">Replace all data?</string>
-    <string name="backup_restore_warning_text">Restoring does not merge: it replaces everything in the app with the contents of the backup file. Every campaign, session and event you have now - including anything recorded after that backup was taken - will be deleted and cannot be recovered.\n\nYou will pick the backup file next; nothing changes until you do.</string>
+    <string name="backup_restore_warning_text">Restoring does not merge: it replaces everything in the app with the contents of the backup file. Every campaign, quest, session and event you have now - including anything recorded after that backup was taken - will be deleted and cannot be recovered.\n\nYou will pick the backup file next; nothing changes until you do.</string>
     <!-- Repeats what the tap does, so the last thing read is not "OK". -->
     <string name="backup_restore_warning_confirm">Replace my data</string>
 

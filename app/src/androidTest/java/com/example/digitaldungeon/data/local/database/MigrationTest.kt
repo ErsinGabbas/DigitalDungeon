@@ -233,6 +233,143 @@ class MigrationTest {
     }
 
     @Test
+    fun migrate8To9_createsQuestsTable_andLeavesEverythingElseAlone() {
+        helper.createDatabase(TEST_DB, 8).apply {
+            insertCampaign()
+            insertCampaignParticipant()
+            insertSession()
+            insertSessionEvent()
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB, 9, true, *ALL_MIGRATIONS)
+
+        assertTrue("quests table was not created", db.hasTable("quests"))
+
+        // The migration is purely additive, so every table that existed before has to come out of
+        // it untouched - that is the whole reason it is safe.
+        db.assertCampaignRowIntact(expectParticipantsColumn = false)
+        db.assertSessionRowIntact()
+        db.query("SELECT COUNT(*) FROM campaign_participants").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+        }
+        db.query("SELECT COUNT(*) FROM session_events").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(1, cursor.getInt(0))
+        }
+
+        // The new table has to be usable, including its foreign key to the surviving campaign.
+        db.insertQuest()
+        db.query(
+            "SELECT campaignId, title, category, status, priority, isHidden, inGameDate " +
+                "FROM quests"
+        ).use { cursor ->
+            assertEquals(1, cursor.count)
+            assertTrue(cursor.moveToFirst())
+            assertEquals(CAMPAIGN_ID, cursor.getInt(0))
+            assertEquals(QUEST_TITLE, cursor.getString(1))
+            // The enums are stored as their constant names, like session_events.type is.
+            assertEquals(QUEST_CATEGORY, cursor.getString(2))
+            assertEquals(QUEST_STATUS, cursor.getString(3))
+            assertEquals(QUEST_PRIORITY, cursor.getString(4))
+            assertEquals(0, cursor.getInt(5))
+            assertTrue("inGameDate is nullable and was not given", cursor.isNull(6))
+        }
+        db.close()
+    }
+
+    @Test
+    fun migrate9To10_createsQuestObjectivesTable_andKeepsTheQuests() {
+        helper.createDatabase(TEST_DB, 9).apply {
+            insertCampaign()
+            insertSession()
+            insertQuest()
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB, 10, true, *ALL_MIGRATIONS)
+
+        assertTrue("quest_objectives table was not created", db.hasTable("quest_objectives"))
+
+        // Additive, so the quest the objectives hang off has to come out untouched.
+        db.query("SELECT id, title, status FROM quests").use { cursor ->
+            assertEquals("quest row did not survive 9 -> 10", 1, cursor.count)
+            assertTrue(cursor.moveToFirst())
+            assertEquals(QUEST_ID, cursor.getInt(0))
+            assertEquals(QUEST_TITLE, cursor.getString(1))
+            assertEquals(QUEST_STATUS, cursor.getString(2))
+        }
+        db.assertCampaignRowIntact(expectParticipantsColumn = false)
+        db.assertSessionRowIntact()
+
+        // The new table has to be usable, including its foreign key to the surviving quest.
+        db.insertQuestObjective()
+        db.query(
+            "SELECT questId, title, status, orderIndex, isOptional FROM quest_objectives"
+        ).use { cursor ->
+            assertEquals(1, cursor.count)
+            assertTrue(cursor.moveToFirst())
+            assertEquals(QUEST_ID, cursor.getInt(0))
+            assertEquals(OBJECTIVE_TITLE, cursor.getString(1))
+            assertEquals(OBJECTIVE_STATUS, cursor.getString(2))
+            assertEquals(0, cursor.getInt(3))
+            assertEquals(1, cursor.getInt(4))
+        }
+        db.close()
+    }
+
+    @Test
+    fun migrate4To10_keepsDataAndEndsWithEveryTable() {
+        helper.createDatabase(TEST_DB, 4).apply {
+            insertCampaign()
+            insertSession()
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB, 10, true, *ALL_MIGRATIONS)
+
+        db.assertCampaignRowIntact(expectParticipantsColumn = false)
+        db.assertSessionRowIntact()
+        assertTrue(db.hasTable("session_events"))
+        assertTrue(db.hasTable("campaign_participants"))
+        assertTrue(db.hasTable("quests"))
+        assertTrue("quest_objectives table was not created", db.hasTable("quest_objectives"))
+        // A database that predates the quest tracker arrives with both tables empty.
+        db.query("SELECT COUNT(*) FROM quest_objectives").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        db.close()
+    }
+
+    @Test
+    fun migrate4To9_keepsDataAndEndsWithEveryTable() {
+        helper.createDatabase(TEST_DB, 4).apply {
+            insertCampaign()
+            insertSession()
+            close()
+        }
+
+        val db = helper.runMigrationsAndValidate(TEST_DB, 9, true, *ALL_MIGRATIONS)
+
+        db.assertCampaignRowIntact(expectParticipantsColumn = false)
+        db.assertSessionRowIntact()
+        assertTrue("session_events table was not created", db.hasTable("session_events"))
+        assertTrue(
+            "campaign_participants table was not created",
+            db.hasTable("campaign_participants")
+        )
+        assertTrue("quests table was not created", db.hasTable("quests"))
+        // A database that predates the quest tracker arrives without quests, not with broken ones.
+        db.query("SELECT COUNT(*) FROM quests").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        db.close()
+    }
+
+    @Test
     fun migrate4To8_keepsDataAndEndsWithTheParticipantsTable() {
         helper.createDatabase(TEST_DB, 4).apply {
             insertCampaign()
@@ -274,7 +411,7 @@ class MigrationTest {
             close()
         }
         // Room must get the file closed, otherwise it reuses the helper's connection.
-        helper.runMigrationsAndValidate(TEST_DB, 8, true, *ALL_MIGRATIONS).close()
+        helper.runMigrationsAndValidate(TEST_DB, 10, true, *ALL_MIGRATIONS).close()
 
         val room = Room.databaseBuilder(context, AppDatabase::class.java, TEST_DB)
             .addMigrations(*ALL_MIGRATIONS)
@@ -295,6 +432,16 @@ class MigrationTest {
 
             val events = runBlocking { room.sessionEventDao().getEventsForSession(SESSION_ID).first() }
             assertTrue("session_events should still be empty", events.isEmpty())
+
+            // The tables the last two migrations added have to be queryable through Room as well,
+            // which is what proves the hand written CREATE TABLEs match the generated schema.
+            val quests = runBlocking { room.questDao().getQuestsForCampaign(CAMPAIGN_ID).first() }
+            assertTrue("a migrated v4 campaign has no quests", quests.isEmpty())
+
+            val objectives = runBlocking {
+                room.questObjectiveDao().getAllObjectives()
+            }
+            assertTrue("a migrated v4 database has no objectives", objectives.isEmpty())
         } finally {
             room.close()
         }
@@ -306,7 +453,7 @@ class MigrationTest {
             insertLegacyCampaign(participantsJson = CAMPAIGN_PARTICIPANTS_JSON)
             close()
         }
-        helper.runMigrationsAndValidate(TEST_DB, 8, true, *ALL_MIGRATIONS).close()
+        helper.runMigrationsAndValidate(TEST_DB, 10, true, *ALL_MIGRATIONS).close()
 
         val room = Room.databaseBuilder(context, AppDatabase::class.java, TEST_DB)
             .addMigrations(*ALL_MIGRATIONS)
@@ -365,6 +512,55 @@ class MigrationTest {
     private fun SupportSQLiteDatabase.insertSession() = execSQL(
         "INSERT INTO sessions (id, campaignId, title, notes, createdAt) VALUES (?, ?, ?, ?, ?)",
         arrayOf<Any>(SESSION_ID, CAMPAIGN_ID, SESSION_TITLE, SESSION_NOTES, SESSION_CREATED_AT)
+    )
+
+    /** Seeds the roster table, which exists from version 8 on. */
+    private fun SupportSQLiteDatabase.insertCampaignParticipant() = execSQL(
+        """
+        INSERT INTO campaign_participants (id, campaignId, name, level, maxHp, orderIndex)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """.trimIndent(),
+        arrayOf<Any>(1, CAMPAIGN_ID, "Ireena", 3, 24, 0)
+    )
+
+    /** Seeds the quests table, which exists from version 9 on. */
+    private fun SupportSQLiteDatabase.insertQuest() = execSQL(
+        """
+        INSERT INTO quests
+            (id, campaignId, title, description, category, status, priority, isHidden, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """.trimIndent(),
+        arrayOf<Any>(
+            QUEST_ID,
+            CAMPAIGN_ID,
+            QUEST_TITLE,
+            QUEST_DESCRIPTION,
+            QUEST_CATEGORY,
+            QUEST_STATUS,
+            QUEST_PRIORITY,
+            0,
+            QUEST_CREATED_AT
+        )
+    )
+
+    /** Seeds the objectives table, which exists from version 10 on. */
+    private fun SupportSQLiteDatabase.insertQuestObjective() = execSQL(
+        """
+        INSERT INTO quest_objectives
+            (id, questId, title, description, status, orderIndex, isOptional)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+        """.trimIndent(),
+        arrayOf<Any>(
+            1,
+            QUEST_ID,
+            OBJECTIVE_TITLE,
+            "",
+            OBJECTIVE_STATUS,
+            0,
+            // An optional step, so the boolean column is exercised with the value that is not
+            // SQLite's default-looking zero.
+            1
+        )
     )
 
     private fun SupportSQLiteDatabase.insertSessionEvent() = execSQL(
@@ -458,5 +654,17 @@ class MigrationTest {
         const val EVENT_ORDER_INDEX = 0
         const val EVENT_TIMESTAMP = 1_700_000_200_000L
         const val EVENT_PARTICIPANTS = """[{"name":"Ireena"}]"""
+
+        const val QUEST_ID = 1
+        const val QUEST_TITLE = "Escort Ireena to Vallaki"
+        const val QUEST_DESCRIPTION = "Ismark asks for an escort"
+        // The three quest enums are stored by constant name, like SessionEventType is.
+        const val QUEST_CATEGORY = "MAIN"
+        const val QUEST_STATUS = "ACTIVE"
+        const val QUEST_PRIORITY = "HIGH"
+        const val QUEST_CREATED_AT = 1_700_000_300_000L
+
+        const val OBJECTIVE_TITLE = "Reach the Tser Pool before nightfall"
+        const val OBJECTIVE_STATUS = "COMPLETED" // QuestObjectiveStatus, stored by name
     }
 }

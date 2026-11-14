@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.digitaldungeon.R
 import com.example.digitaldungeon.data.repository.CampaignRepository
+import com.example.digitaldungeon.data.repository.QuestRepository
+import com.example.digitaldungeon.data.repository.QuestSessionLinkRepository
 import com.example.digitaldungeon.data.repository.SessionEventRepository
 import com.example.digitaldungeon.data.repository.SessionEventRepository.MoveDirection
 import com.example.digitaldungeon.data.repository.SessionRepository
@@ -15,6 +17,7 @@ import com.example.digitaldungeon.domain.model.SessionEvent
 import com.example.digitaldungeon.domain.model.SessionEventType
 import com.example.digitaldungeon.ui.session.state.SessionDetailUiState
 import com.example.digitaldungeon.ui.text.UiText
+import com.example.digitaldungeon.ui.text.asUiText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +33,8 @@ class SessionDetailViewModel @Inject constructor(
     private val sessionRepository: SessionRepository,
     private val sessionEventRepository: SessionEventRepository,
     private val campaignRepository: CampaignRepository,
+    private val questRepository: QuestRepository,
+    private val questSessionLinkRepository: QuestSessionLinkRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -43,9 +48,37 @@ class SessionDetailViewModel @Inject constructor(
 
     private var campaignRosterJob: Job? = null
 
+    /** Follows the quests of the same campaign, for the titles of the linked quests. */
+    private var campaignQuestsJob: Job? = null
+
     init {
         loadSession()
         loadEvents()
+        loadQuestLinks()
+    }
+
+    /**
+     * Which quests came up in this session.
+     *
+     * Read-only: linking happens on the quest's own screen, where the campaign's quests are
+     * already loaded. This screen only needs to be able to cross over.
+     */
+    private fun loadQuestLinks() {
+        viewModelScope.launch {
+            questSessionLinkRepository.getLinksForSession(sessionId)
+                .catch { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            error = throwable.asUiText(
+                                R.string.session_error_quests_load_failed
+                            )
+                        )
+                    }
+                }
+                .collect { links ->
+                    _uiState.update { it.copy(questLinks = links) }
+                }
+        }
     }
 
     // -------------------------
@@ -100,10 +133,28 @@ class SessionDetailViewModel @Inject constructor(
 
         observedCampaignId = campaignId
         campaignRosterJob?.cancel()
+        campaignQuestsJob?.cancel()
 
         if (campaignId == null) {
             onCampaignRosterLoaded(emptyList())
+            _uiState.update { it.copy(campaignQuests = emptyList()) }
             return
+        }
+
+        campaignQuestsJob = viewModelScope.launch {
+            questRepository.getQuestsForCampaign(campaignId)
+                .catch { throwable ->
+                    _uiState.update {
+                        it.copy(
+                            error = throwable.asUiText(
+                                R.string.session_error_quests_load_failed
+                            )
+                        )
+                    }
+                }
+                .collect { quests ->
+                    _uiState.update { it.copy(campaignQuests = quests) }
+                }
         }
 
         campaignRosterJob = viewModelScope.launch {

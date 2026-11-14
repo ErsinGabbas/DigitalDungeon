@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    User-facing text of the quest tracker: the quest list of a campaign, one quest
+    and the form that creates or edits it.
+
+    A file of its own for the same reason strings_campaign.xml is one: Android
+    merges every XML file in res/values, so one catalogue per feature keeps two
+    people editing two features out of each other's way. Every name is prefixed
+    quest_ because that merge is flat and a repeated name is a build error.
+
+    Labels shared with the rest of the app - Save, Cancel, Delete, Edit, Back,
+    "Created <date>" - are deliberately not repeated here; they live under
+    common_ in strings_campaign.xml and are reused as they are.
+-->
+<resources>
+
+    <!-- ============================================================
+         Quest list
+         ============================================================ -->
+
+    <string name="quest_list_title">Quests</string>
+    <string name="quest_create_action">New quest</string>
+    <string name="quest_empty">No quests yet</string>
+    <!-- Shown when the search and the filters together hid every quest. -->
+    <string name="quest_no_matches">No quests match the current search and filters</string>
+    <string name="quest_search_label">Search quests</string>
+    <!-- Content description of the button that empties the search field. -->
+    <string name="quest_search_clear">Clear search</string>
+    <string name="quest_action_clear_filters">Reset filters</string>
+
+    <!--
+        How much of the list the filters are hiding. The grammatical form follows
+        the total, not the visible count: it is the noun after "of" that has to
+        agree with it.
+    -->
+    <plurals name="quest_filter_status">
+        <item quantity="one">Showing %1$d of %2$d quest.</item>
+        <item quantity="other">Showing %1$d of %2$d quests.</item>
+    </plurals>
+
+    <!-- The "no filter" chip of each filter row. -->
+    <string name="quest_filter_status_any">Any status</string>
+    <string name="quest_filter_category_any">Any category</string>
+
+    <string name="quest_sort_heading">Sort</string>
+    <string name="quest_sort_priority">By priority</string>
+    <string name="quest_sort_newest">Newest first</string>
+
+    <string name="quest_delete_dialog_title">Delete quest?</string>
+    <!-- %1$s is the quest title. -->
+    <string name="quest_delete_dialog_text">\"%1$s\" will be deleted. This cannot be undone.</string>
+
+    <!-- ============================================================
+         One quest
+         ============================================================ -->
+
+    <!-- Top bar title before the quest has loaded, or if it is gone. -->
+    <string name="quest_detail_title_fallback">Quest</string>
+    <string name="quest_not_found">Quest not found</string>
+
+    <string name="quest_detail_description_empty">No description</string>
+    <!-- %1$s is a category name. -->
+    <string name="quest_detail_category">Category: %1$s</string>
+    <!-- %1$s is a priority name. -->
+    <string name="quest_detail_priority">Priority: %1$s</string>
+    <!-- %1$s is whatever the DM wrote, in the calendar of their own world. -->
+    <string name="quest_detail_in_game_date">In-world date: %1$s</string>
+    <!--
+        Said plainly, because this flag is a note to the DM and not a permission:
+        everything in this app is already private to them.
+    -->
+    <string name="quest_detail_hidden">The party does not know about this quest yet</string>
+
+    <string name="quest_detail_status_heading">Status</string>
+    <!--
+        The status is changed by hand and any direction is allowed, reopening
+        included - see QuestStatus.
+    -->
+    <string name="quest_detail_status_hint">Tap a status to move the quest; a finished quest can be reopened the same way.</string>
+
+    <!-- ============================================================
+         Objectives of a quest
+         ============================================================ -->
+
+    <string name="quest_objectives_heading">Objectives</string>
+    <!--
+        A quest needs no objectives at all, so this is a statement and not a
+        complaint: "the miller wants his daughter back" is a complete quest.
+    -->
+    <string name="quest_objectives_empty">No objectives yet. A quest does not need any.</string>
+
+    <string name="quest_objective_title_label">Objective</string>
+    <string name="quest_objective_description_label">Details</string>
+    <string name="quest_objective_optional_label">Optional step</string>
+    <string name="quest_objective_add">Add objective</string>
+    <string name="quest_objective_update">Save objective</string>
+    <!--
+        The row's own Edit and Delete buttons use the shared common_edit / common_delete,
+        like the quest card does; there is deliberately no objective-specific wording for
+        them. What TalkBack needs in order to tell two rows apart is on the arrows below,
+        which name the objective they move.
+    -->
+    <!-- Marker on an objective that is worth doing but not required. -->
+    <string name="quest_objective_optional_marker">Optional</string>
+
+    <!-- Content descriptions of the two reorder arrows, read out by TalkBack. -->
+    <string name="quest_objective_move_up">Move objective up</string>
+    <string name="quest_objective_move_down">Move objective down</string>
+    <!-- Said by an arrow that cannot be used because there is no neighbour that way. -->
+    <string name="quest_objective_move_up_at_edge">Already the first objective</string>
+    <string name="quest_objective_move_down_at_edge">Already the last objective</string>
+
+    <string name="quest_objective_delete_dialog_title">Delete objective?</string>
+    <!-- %1$s is the objective's title. -->
+    <string name="quest_objective_delete_dialog_text">\"%1$s\" will be deleted. This cannot be undone.</string>
+
+    <string name="quest_objective_title_required">Objective cannot be empty</string>
+    <string name="quest_error_objectives_load_failed">Failed to load objectives</string>
+    <string name="quest_error_objective_add_failed">Failed to add objective</string>
+    <string name="quest_error_objective_update_failed">Failed to save objective</string>
+    <string name="quest_error_objective_delete_failed">Failed to delete objective</string>
+    <string name="quest_error_objective_status_failed">Failed to change the objective status</string>
+    <string name="quest_error_objective_move_failed">Failed to reorder the objectives</string>
+
+    <string name="quest_objective_status_not_started">Not started</string>
+    <string name="quest_objective_status_completed">Done</string>
+    <string name="quest_objective_status_failed">Failed</string>
+
+    <!-- ============================================================
+         Rewards
+         ============================================================ -->
+
+    <string name="quest_rewards_heading">Rewards</string>
+    <string name="quest_rewards_empty">Nothing written down yet</string>
+
+    <string name="quest_reward_title_label">Reward</string>
+    <string name="quest_reward_description_label">Details</string>
+    <string name="quest_reward_type_label">Kind</string>
+    <string name="quest_reward_add">Add reward</string>
+    <string name="quest_reward_update">Save reward</string>
+    <string name="quest_reward_title_required">Reward cannot be empty</string>
+
+    <string name="quest_reward_delete_dialog_title">Delete reward?</string>
+    <!-- %1$s is the reward's title. -->
+    <string name="quest_reward_delete_dialog_text">\"%1$s\" will be deleted. This cannot be undone.</string>
+
+    <string name="quest_reward_type_experience">Experience</string>
+    <string name="quest_reward_type_money">Coin</string>
+    <string name="quest_reward_type_item">Item</string>
+    <string name="quest_reward_type_reputation">Reputation</string>
+    <string name="quest_reward_type_other">Other</string>
+
+    <string name="quest_error_rewards_load_failed">Failed to load rewards</string>
+    <string name="quest_error_reward_add_failed">Failed to add reward</string>
+    <string name="quest_error_reward_update_failed">Failed to save reward</string>
+    <string name="quest_error_reward_delete_failed">Failed to delete reward</string>
+
+    <!-- ============================================================
+         Consequences
+         ============================================================ -->
+
+    <string name="quest_consequences_heading">Consequences</string>
+    <!--
+        Phrased as "nothing has come of it yet" rather than "no consequences":
+        an empty list here means the story has not caught up, not that the DM
+        forgot to fill something in.
+    -->
+    <string name="quest_consequences_empty">Nothing has come of it yet</string>
+
+    <string name="quest_consequence_title_label">What changed</string>
+    <string name="quest_consequence_description_label">Details</string>
+    <string name="quest_consequence_type_label">What it touches</string>
+    <string name="quest_consequence_add">Add consequence</string>
+    <string name="quest_consequence_update">Save consequence</string>
+    <string name="quest_consequence_title_required">Consequence cannot be empty</string>
+
+    <string name="quest_consequence_delete_dialog_title">Delete consequence?</string>
+    <!-- %1$s is the consequence's title. -->
+    <string name="quest_consequence_delete_dialog_text">\"%1$s\" will be deleted. This cannot be undone.</string>
+
+    <string name="quest_consequence_type_world">The world</string>
+    <string name="quest_consequence_type_npc">Someone\'s fate</string>
+    <string name="quest_consequence_type_faction">A faction</string>
+    <string name="quest_consequence_type_other">Other</string>
+
+    <string name="quest_error_consequences_load_failed">Failed to load consequences</string>
+    <string name="quest_error_consequence_add_failed">Failed to add consequence</string>
+    <string name="quest_error_consequence_update_failed">Failed to save consequence</string>
+    <string name="quest_error_consequence_delete_failed">Failed to delete consequence</string>
+
+    <!-- ============================================================
+         DM notes on a quest
+         ============================================================ -->
+
+    <string name="quest_notes_heading">Notes</string>
+    <string name="quest_notes_empty">No notes yet</string>
+
+    <string name="quest_note_content_label">Note</string>
+    <string name="quest_note_add">Add note</string>
+    <string name="quest_note_update">Save note</string>
+    <string name="quest_note_content_required">Note cannot be empty</string>
+
+    <!-- Only shown on a note that was changed after it was written. %1$s is a date. -->
+    <string name="quest_note_edited">Edited %1$s</string>
+
+    <string name="quest_note_delete_dialog_title">Delete note?</string>
+    <!-- No name in the sentence: a note has no title, only its text. -->
+    <string name="quest_note_delete_dialog_text">This note will be deleted. This cannot be undone.</string>
+
+    <string name="quest_error_notes_load_failed">Failed to load notes</string>
+    <string name="quest_error_note_add_failed">Failed to add note</string>
+    <string name="quest_error_note_update_failed">Failed to save note</string>
+    <string name="quest_error_note_delete_failed">Failed to delete note</string>
+
+    <!-- ============================================================
+         Links between quests
+         ============================================================ -->
+
+    <string name="quest_relations_heading">Linked quests</string>
+    <string name="quest_relations_empty">This quest stands on its own</string>
+    <!-- Shown instead of the picker when the campaign holds no other quest yet. -->
+    <string name="quest_relations_no_candidates">There is no other quest in this campaign to link to yet</string>
+
+    <!-- Group headings, read from this quest's point of view. -->
+    <string name="quest_relation_group_parents">Part of</string>
+    <string name="quest_relation_group_children">Leads to</string>
+    <string name="quest_relation_group_precedes">Comes before</string>
+    <string name="quest_relation_group_follows">Comes after</string>
+    <string name="quest_relation_group_alternatives">Instead of</string>
+    <string name="quest_relation_group_related">Related to</string>
+
+    <!-- The picker's options, phrased as the sentence the link makes about this quest. -->
+    <string name="quest_relation_kind_parent_of">Leads to…</string>
+    <string name="quest_relation_kind_child_of">Is part of…</string>
+    <string name="quest_relation_kind_precedes">Comes before…</string>
+    <string name="quest_relation_kind_follows">Comes after…</string>
+    <string name="quest_relation_kind_alternative">Is an alternative to…</string>
+    <string name="quest_relation_kind_related">Is related to…</string>
+
+    <string name="quest_relation_kind_label">This quest</string>
+    <string name="quest_relation_target_label">Quest to link</string>
+    <string name="quest_relation_target_placeholder">Pick a quest</string>
+    <string name="quest_relation_add">Add link</string>
+    <!-- Title fallback for a linked quest that is not in the loaded list. -->
+    <string name="quest_relation_unknown_quest">Quest outside this list</string>
+
+    <string name="quest_relation_delete_dialog_title">Remove link?</string>
+    <!-- %1$s is the other quest's title. Says plainly that neither quest is deleted. -->
+    <string name="quest_relation_delete_dialog_text">The link to \"%1$s\" will be removed. Both quests stay exactly as they are.</string>
+
+    <!-- The refusals. Each one is a different thing to tell the user, so each has its own line. -->
+    <string name="quest_relation_target_required">Pick the quest to link to first</string>
+    <string name="quest_relation_refused_same_quest">A quest cannot be linked to itself</string>
+    <string name="quest_relation_refused_exists">That link is already there</string>
+    <string name="quest_relation_refused_other_campaign">That quest belongs to another campaign</string>
+    <string name="quest_relation_refused_cycle">That would make the quest its own ancestor: it is already somewhere above this one</string>
+    <string name="quest_relation_refused_missing">That quest no longer exists</string>
+
+    <string name="quest_error_relations_load_failed">Failed to load links</string>
+    <string name="quest_error_relation_add_failed">Failed to add the link</string>
+    <string name="quest_error_relation_delete_failed">Failed to remove the link</string>
+
+    <!-- ============================================================
+         History of a quest
+         ============================================================ -->
+
+    <string name="quest_history_heading">History</string>
+    <string name="quest_history_empty">Nothing has been done to this quest yet</string>
+
+    <!--
+        The log stores data, not sentences - a status constant or an objective's title - so the
+        sentence is built here, at render time, in whatever language the app is being read in.
+        %1$s is that stored value.
+    -->
+    <string name="quest_history_status_changed">Status: %1$s</string>
+    <string name="quest_history_objective_completed">Objective done: %1$s</string>
+    <string name="quest_history_objective_failed">Objective failed: %1$s</string>
+    <string name="quest_history_objective_reopened">Objective reopened: %1$s</string>
+
+    <string name="quest_error_history_load_failed">Failed to load the history</string>
+
+    <!-- ============================================================
+         Sessions a quest came up in
+         ============================================================ -->
+
+    <string name="quest_sessions_heading">Came up in</string>
+    <string name="quest_sessions_empty">Not recorded in any session yet</string>
+    <string name="quest_sessions_no_candidates">This campaign has no sessions yet</string>
+
+    <string name="quest_session_picker_label">Session</string>
+    <string name="quest_session_picker_placeholder">Pick a session</string>
+    <string name="quest_session_add">Record in session</string>
+    <!-- Title fallback for a linked session that is not in the loaded list. -->
+    <string name="quest_session_unknown">Session outside this list</string>
+
+    <string name="quest_session_unlink_dialog_title">Remove record?</string>
+    <!-- %1$s is the session title. Says plainly that nothing else is deleted. -->
+    <string name="quest_session_unlink_dialog_text">The record that this quest came up in \"%1$s\" will be removed. Neither the quest nor the session is deleted.</string>
+
+    <string name="quest_session_required">Pick the session first</string>
+    <string name="quest_session_refused_exists">This quest is already recorded in that session</string>
+    <string name="quest_session_refused_other_campaign">That session belongs to another campaign</string>
+    <string name="quest_session_refused_quest_missing">This quest no longer exists</string>
+    <string name="quest_session_refused_session_missing">That session no longer exists</string>
+
+    <string name="quest_error_session_links_load_failed">Failed to load the sessions</string>
+    <string name="quest_error_session_link_add_failed">Failed to record the quest in the session</string>
+    <string name="quest_error_session_link_delete_failed">Failed to remove the record</string>
+
+    <!-- ============================================================
+         Create and edit
+         ============================================================ -->
+
+    <string name="quest_create_title">New quest</string>
+    <string name="quest_edit_title">Edit quest</string>
+
+    <string name="quest_title_label">Quest title</string>
+    <string name="quest_description_label">Description</string>
+    <string name="quest_category_label">Category</string>
+    <string name="quest_status_label">Status</string>
+    <string name="quest_priority_label">Priority</string>
+    <string name="quest_in_game_date_label">In-world date</string>
+    <string name="quest_hidden_label">The party does not know about it yet</string>
+
+    <!--
+        The form opens with the title, the description and the category, which is
+        all a quest needs. The rest is behind this, so writing one down stays a
+        single step.
+    -->
+    <string name="quest_optional_show">More fields</string>
+    <string name="quest_optional_hide">Fewer fields</string>
+
+    <!-- ============================================================
+         Validation and failures
+         ============================================================ -->
+
+    <string name="quest_title_required">Quest title cannot be empty</string>
+
+    <!-- Fallbacks, used only when the failure itself said nothing. -->
+    <string name="quest_error_load_failed">Failed to load quests</string>
+    <string name="quest_error_load_one_failed">Failed to load quest</string>
+    <string name="quest_error_add_failed">Failed to add quest</string>
+    <string name="quest_error_update_failed">Failed to save quest</string>
+    <string name="quest_error_delete_failed">Failed to delete quest</string>
+    <string name="quest_error_status_failed">Failed to change the status</string>
+
+    <!-- ============================================================
+         Category, status and priority names
+
+         The enum constants themselves are storage: they are written into the
+         quests table as text and into the backup document as text, so they can
+         be neither renamed nor translated. These are the only place the two
+         concerns meet - see QuestLabels.kt.
+         ============================================================ -->
+
+    <string name="quest_category_main">Main story</string>
+    <string name="quest_category_side">Side quest</string>
+    <string name="quest_category_personal">Personal</string>
+    <string name="quest_category_faction">Faction</string>
+    <string name="quest_category_repeatable">Repeatable</string>
+    <string name="quest_category_other">Other</string>
+
+    <string name="quest_status_not_started">Not started</string>
+    <string name="quest_status_active">Active</string>
+    <string name="quest_status_paused">Paused</string>
+    <string name="quest_status_completed">Completed</string>
+    <string name="quest_status_failed">Failed</string>
+    <string name="quest_status_cancelled">Cancelled</string>
+
+    <string name="quest_priority_high">High</string>
+    <string name="quest_priority_normal">Normal</string>
+    <string name="quest_priority_low">Low</string>
+
+</resources>

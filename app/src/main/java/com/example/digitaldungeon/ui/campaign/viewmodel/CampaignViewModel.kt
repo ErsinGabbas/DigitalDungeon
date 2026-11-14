@@ -1,11 +1,11 @@
 package com.example.digitaldungeon.ui.campaign.viewmodel
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.Campaign
 import com.example.digitaldungeon.ui.text.UiText
+import com.example.digitaldungeon.ui.text.asUiText
 import com.example.digitaldungeon.ui.campaign.state.BackupMessage
 import com.example.digitaldungeon.ui.campaign.state.BackupOperation
 import com.example.digitaldungeon.ui.campaign.state.CampaignUiState
@@ -479,7 +479,8 @@ class CampaignViewModel @Inject constructor(
                 campaigns = campaigns,
                 participants = campaignParticipants,
                 sessions = sessions,
-                events = sessionEvents
+                events = sessionEvents,
+                quests = quests
             )
 
             RestoreResult.InvalidJson -> BackupMessage.error(
@@ -504,16 +505,6 @@ class CampaignViewModel @Inject constructor(
         )
 
 }
-
-/**
- * The failure as something the screen can show: the exception's own message when
- * it has one - untranslatable, so it travels as [UiText.Raw] - and the localized
- * [fallback] when it does not.
- */
-internal fun Exception.asUiText(@StringRes fallback: Int): UiText =
-    message?.takeIf { it.isNotBlank() }
-        ?.let { UiText.Raw(it) }
-        ?: UiText.of(fallback)
 
 /**
  * Exceptions from file access are often messageless (an IOException from a

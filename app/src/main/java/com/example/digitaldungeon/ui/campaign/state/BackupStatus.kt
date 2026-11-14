@@ -66,13 +66,30 @@ sealed interface BackupMessage {
      * The restore finished. The counts are kept per table instead of being summed
      * into [totalRecords] alone, because "384 records" does not tell anyone
      * whether their sessions came back.
+     *
+     * Deliberately only the things a user counts: campaigns, the party, quests,
+     * sessions and events. The *parts* of a quest - its objectives, and everything
+     * later stages hang off it - are not listed, even though
+     * [com.example.digitaldungeon.data.backup.RestoreResult.Success] carries them
+     * and [totalRecords] includes them. A sentence with a dozen numbers in it is
+     * one nobody reads, and the quest line already answers the question this
+     * message exists for; the parts came back with their quest or not at all, and
+     * the quest screen is where they are checked. The consequence, stated here so
+     * it is not mistaken for a bug: [totalRecords] is larger than the sum of the
+     * counts below.
      */
     data class RestoreSucceeded(
         val totalRecords: Int,
         val campaigns: Int,
         val participants: Int,
         val sessions: Int,
-        val events: Int
+        val events: Int,
+        /**
+         * Quests that came back. Reported like every other count, and for the same
+         * reason: a restore that silently said nothing about quests would leave the
+         * one question this message exists to answer unanswered.
+         */
+        val quests: Int = 0
     ) : BackupMessage {
         override val isError: Boolean get() = false
     }

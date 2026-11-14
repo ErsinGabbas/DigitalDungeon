@@ -126,4 +126,14 @@
     <!-- %1$s name, %2$d level, %3$d max HP -->
     <string name="session_export_participant_line">%1$s (Lvl %2$d, HP %3$d)</string>
 
+    <!-- ============================================================
+         Quests that came up in this session
+         ============================================================ -->
+
+    <string name="session_quests_heading">Quests in this session</string>
+    <string name="session_quests_empty">No quest is recorded for this session. Quests are linked from the quest itself.</string>
+    <!-- Title fallback for a linked quest that is not in the loaded list. -->
+    <string name="session_quests_unknown">Quest outside this list</string>
+    <string name="session_error_quests_load_failed">Failed to load the quests of this session</string>
+
 </resources>

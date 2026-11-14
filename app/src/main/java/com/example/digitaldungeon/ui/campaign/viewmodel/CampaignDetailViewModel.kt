@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.digitaldungeon.R
 import com.example.digitaldungeon.domain.model.EventParticipant
 import com.example.digitaldungeon.ui.text.UiText
+import com.example.digitaldungeon.ui.text.asUiText
 import com.example.digitaldungeon.domain.model.Session
 import com.example.digitaldungeon.data.repository.CampaignRepository
 import com.example.digitaldungeon.data.repository.SessionRepository

@@ -101,6 +101,7 @@ class CampaignDetailScreenContentTest {
     private val removedIndexes = mutableListOf<Int>()
     private var saveParticipantsCalls = 0
     private val openedSessions = mutableListOf<Int>()
+    private val openedQuests = mutableListOf<Int>()
     private val sessionEditRequested = mutableListOf<Session>()
     private val sessionDeleteRequested = mutableListOf<Session>()
     private var addSessionCalls = 0
@@ -121,6 +122,7 @@ class CampaignDetailScreenContentTest {
                     sessionsState = sessionsState,
                     onBack = { backCalls++ },
                     onOpenSession = { openedSessions += it },
+                    onOpenQuests = { openedQuests += it },
                     participantActions = CampaignParticipantActions(
                         onEditParticipant = { editedIndexes += it },
                         onRemoveParticipant = { removedIndexes += it },

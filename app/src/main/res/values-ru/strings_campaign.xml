@@ -38,7 +38,7 @@
 
     <string name="campaign_edit_dialog_title">Изменить кампанию</string>
     <string name="campaign_delete_dialog_title">Удалить кампанию?</string>
-    <string name="campaign_delete_dialog_text">Кампания «%1$s» будет удалена вместе со всеми её сессиями и всеми записанными в них событиями. Отменить это будет нельзя.</string>
+    <string name="campaign_delete_dialog_text">Кампания «%1$s» будет удалена вместе со всеми её квестами, всеми её сессиями и всеми записанными в них событиями. Отменить это будет нельзя.</string>
 
     <!-- ============================================================
          Экран кампании
@@ -46,6 +46,8 @@
 
     <string name="campaign_detail_title_fallback">Кампания</string>
     <string name="campaign_not_found">Кампания не найдена</string>
+
+    <string name="campaign_quests_open">Квесты</string>
 
     <string name="campaign_participants_heading">Участники кампании:</string>
     <string name="campaign_participants_unsaved">Есть несохранённые изменения</string>
@@ -107,15 +109,15 @@
     <string name="backup_progress_restore">Заменяем данные из резервной копии…</string>
 
     <plurals name="backup_export_success">
-        <item quantity="one">Резервная копия сохранена: %1$d кампания со всеми сессиями и событиями.</item>
-        <item quantity="few">Резервная копия сохранена: %1$d кампании со всеми сессиями и событиями.</item>
-        <item quantity="many">Резервная копия сохранена: %1$d кампаний со всеми сессиями и событиями.</item>
-        <item quantity="other">Резервная копия сохранена: %1$d кампании со всеми сессиями и событиями.</item>
+        <item quantity="one">Резервная копия сохранена: %1$d кампания со всеми квестами, сессиями и событиями.</item>
+        <item quantity="few">Резервная копия сохранена: %1$d кампании со всеми квестами, сессиями и событиями.</item>
+        <item quantity="many">Резервная копия сохранена: %1$d кампаний со всеми квестами, сессиями и событиями.</item>
+        <item quantity="other">Резервная копия сохранена: %1$d кампании со всеми квестами, сессиями и событиями.</item>
     </plurals>
 
     <string name="backup_export_failed">Не удалось записать файл резервной копии: %1$s.</string>
 
-    <string name="backup_restore_success">Восстановление завершено: %1$s — %2$s, %3$s, %4$s, %5$s.</string>
+    <string name="backup_restore_success">Восстановление завершено: %1$s — %2$s, %3$s, %4$s, %5$s, %6$s.</string>
 
     <plurals name="backup_record_count">
         <item quantity="one">%1$d запись</item>
@@ -138,6 +140,13 @@
         <item quantity="other">%1$d участника</item>
     </plurals>
 
+    <plurals name="backup_quest_count">
+        <item quantity="one">%1$d квест</item>
+        <item quantity="few">%1$d квеста</item>
+        <item quantity="many">%1$d квестов</item>
+        <item quantity="other">%1$d квеста</item>
+    </plurals>
+
     <plurals name="backup_session_count">
         <item quantity="one">%1$d сессия</item>
         <item quantity="few">%1$d сессии</item>
@@ -157,7 +166,7 @@
     <string name="backup_restore_unsupported_version">Эта резервная копия создана более новой версией приложения (формат копии %1$d, эта версия читает %2$d). Обновите приложение и попробуйте снова. Ваши данные не изменились.</string>
 
     <string name="backup_restore_warning_title">Заменить все данные?</string>
-    <string name="backup_restore_warning_text">Восстановление не объединяет данные: оно полностью заменяет всё в приложении содержимым файла резервной копии. Все кампании, сессии и события, которые есть сейчас, — включая всё записанное после создания этой копии, — будут удалены безвозвратно.\n\nДальше вы выберете файл копии; до этого ничего не изменится.</string>
+    <string name="backup_restore_warning_text">Восстановление не объединяет данные: оно полностью заменяет всё в приложении содержимым файла резервной копии. Все кампании, квесты, сессии и события, которые есть сейчас, — включая всё записанное после создания этой копии, — будут удалены безвозвратно.\n\nДальше вы выберете файл копии; до этого ничего не изменится.</string>
     <string name="backup_restore_warning_confirm">Заменить мои данные</string>
 
 </resources>
